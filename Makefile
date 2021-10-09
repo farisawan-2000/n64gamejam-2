@@ -1,3 +1,5 @@
+default: all
+
 TARGET_STRING := gamejam2639
 TARGET := $(TARGET_STRING)
 
@@ -27,7 +29,7 @@ BOOT		:= /usr/lib/n64/PR/bootcode/boot.6102
 BOOT_OBJ	:= $(BUILD_DIR)/boot.6102.o
 
 # Directories containing source files
-SRC_DIRS += src src/buffers src/main asm src/math
+SRC_DIRS += src src/buffers src/game asm src/math
 
 C_FILES           := $(foreach dir,$(SRC_DIRS),$(wildcard $(dir)/*.c))
 ZIG_FILES           := $(foreach dir,$(SRC_DIRS),$(wildcard $(dir)/*.zig))
@@ -86,14 +88,28 @@ endef
 # Main Targets                                                                 #
 #==============================================================================#
 
+turbo3d/build/t3d.bin turbo3d/build/t3d.data.bin:
+	make -C turbo3d
+
+
+$(BUILD_DIR)/turbo3d_data.o: turbo3d/build/t3d.data.bin
+	mips-linux-gnu-ld -r -b binary $< -o $@
+
+$(BUILD_DIR)/turbo3d_text.o: turbo3d/build/t3d.bin
+	make -C turbo3d
+	mips-linux-gnu-ld -r -b binary $< -o $@
+
 # Default target
-default: $(ROM)
+all: $(ROM)
 
 clean:
 	$(RM) -r $(BUILD_DIR)
 
 test: $(ROM)
 	~/Downloads/mupen64plus/mupen64plus-gui $<
+
+test-pj64: $(ROM)
+	wine ~/Desktop/new64/Project64.exe $<
 
 ALL_DIRS := $(BUILD_DIR) $(addprefix $(BUILD_DIR)/,$(SRC_DIRS))
 
@@ -124,7 +140,7 @@ $(BUILD_DIR)/%.o: %.s
 	$(V)$(CC) -c $(CFLAGS) $(foreach i,$(INCLUDE_DIRS),-Wa,-I$(i)) -x assembler-with-cpp -MMD -MF $(BUILD_DIR)/$*.d  -o $@ $<
 
 # Run linker script through the C preprocessor
-$(BUILD_DIR)/$(LD_SCRIPT): $(LD_SCRIPT)
+$(BUILD_DIR)/$(LD_SCRIPT): $(LD_SCRIPT) $(BUILD_DIR)/turbo3d_text.o $(BUILD_DIR)/turbo3d_data.o
 	$(call print,Preprocessing linker script:,$<,$@)
 	$(V)$(CPP) $(CPPFLAGS) -DBUILD_DIR=$(BUILD_DIR) -MMD -MP -MT $@ -MF $@.d -o $@ $<
 

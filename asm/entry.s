@@ -1,4 +1,4 @@
-#include <system.h>
+#include <n64_defs.h>
 # assembler directives
 .set noat      # allow manual use of $at
 .set noreorder # don't insert nops after branches

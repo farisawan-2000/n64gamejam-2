@@ -1,6 +1,6 @@
 OUTPUT_ARCH (mips)
 
-#include "system.h"
+#include "n64_defs.h"
 
 #define BEGIN_SEG(name, addr) \
     _##name##SegmentStart = ADDR(.name); \
@@ -40,7 +40,7 @@ SECTIONS
       */libgcc.a:*.o(.text);
 
       /usr/lib/n64/PR/rspboot.o(.text);
-      turbo3d/build/turbo3d_text.o(.data);
+      BUILD_DIR/turbo3d_text.o(.data);
 
       /* data */
       BUILD_DIR/src*.o(.data*);
@@ -48,7 +48,7 @@ SECTIONS
       */libultra_rom.a:*.o(.data*);
 
       /usr/lib/n64/PR/rspboot.o(.data*);
-      turbo3d/build/turbo3d_data.o(.data);
+      BUILD_DIR/turbo3d_data.o(.data);
       /* rodata */
       BUILD_DIR/src*.o(.*rodata*);
 
