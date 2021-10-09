@@ -1,0 +1,3 @@
+[submodule "turbo3d"]
+	path = turbo3d
+	url = https://github.com/farisawan-2000/turbo3d
