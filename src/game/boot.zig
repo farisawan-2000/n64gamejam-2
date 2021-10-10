@@ -70,10 +70,15 @@ pub fn zigmain(arg: ?*c_void) callconv(.C) void {
 }
 
 
+extern fn crash_screen_init() callconv(.C) void;
+
 pub fn zigidle(arg: ?*c_void) callconv(.C) void {
     _ = arg;
+    
     c.osCreateViManager(c.OS_PRIORITY_VIMGR);
     c.osViSetMode(&c.osViModeNtscLan1);
+
+    crash_screen_init();
 
     c.osCreatePiManager(c.OS_PRIORITY_PIMGR, &piMessageQ, &piMessages, c.NUM_PI_MSGS);
     c.osCreateThread(&zigMainThread, 1, zigmain, null, &zigMainStack[c.STACKSIZE / 4], 10);

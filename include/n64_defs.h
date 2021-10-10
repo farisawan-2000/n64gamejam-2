@@ -8,6 +8,8 @@
   ---------------------------------------------------------------------*/
 #define	SCREEN_WD	320
 #define	SCREEN_HT	240
+#define SCREEN_WIDTH SCREEN_WD
+#define SCREEN_HEIGHT SCREEN_HT
 
 #define RDPFIFO_SIZE    (8*1024/sizeof(u64))
 #define GLIST_LEN       2048

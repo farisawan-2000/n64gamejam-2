@@ -3,15 +3,15 @@
 
 comptime {
     @export(GameMain, .{ .name = "GameMain", .linkage = .Strong });
-    @export(setupTaskStructure, .{ .name = "setupTaskStructure", .linkage = .Strong });
     @export(gfxBuff, .{ .name = "gfxBuff", .linkage = .Strong });
     @export(myGfxTask, .{ .name = "myGfxTask", .linkage = .Strong});
+    @export(gRenderedFramebuffer, .{ .name = "gRenderedFramebuffer", .linkage = .Strong});
 }
 extern var retraceMessageQ : c.OSMesgQueue;
 extern var rspMessageQ : c.OSMesgQueue;
 extern var rdpMessageQ : c.OSMesgQueue;
 
-pub fn setupTaskStructure(task: *c.OSTask) callconv(.C) void {
+pub fn setupTaskStructure(task: *c.OSTask) void {
     task.*.t.type = c.M_GFXTASK;
     task.*.t.flags = c.OS_TASK_DP_WAIT | c.OS_TASK_LOADABLE;
     task.*.t.ucode_boot = &gfx.rspbootTextStart;
@@ -39,16 +39,17 @@ pub fn setupTaskStructure(task: *c.OSTask) callconv(.C) void {
 var gfxBuff : [c.GLIST_LEN]gfx.Gfx = undefined;
 
 var myGfxTask : c.OSTask = undefined;
+var gRenderedFramebuffer: u16 = 0;
+var gTimer : u32 = 0;
 
 pub fn GameMain() callconv(.C) void {
-    var draw_frame: u8 = 0;
 
     setupTaskStructure(&myGfxTask);
 
     while(true) {
         _ = c.osRecvMesg(&retraceMessageQ, null, c.OS_MESG_BLOCK);
 
-        SP.Segment(&gfxBuff[0], c.CFB_SEGMENT, @ptrCast(*c_ushort, &c.system_cfb[draw_frame]));
+        SP.Segment(&gfxBuff[0], c.CFB_SEGMENT, @ptrCast(*c_ushort, &c.system_cfb[gRenderedFramebuffer]));
         SP.DisplayList(&gfxBuff[1], &gfx.clear_cfb);
 
         DP.FullSync(&gfxBuff[2]);
@@ -62,9 +63,15 @@ pub fn GameMain() callconv(.C) void {
         _ = c.osRecvMesg(&rspMessageQ, null, c.OS_MESG_BLOCK);
         _ = c.osRecvMesg(&rdpMessageQ, null, c.OS_MESG_BLOCK);  
 
+        if (gTimer > 50) {
+            var crash = @intToPtr([*]align(2) volatile u16, 10);
+
+            crash.* = 0;
+        }
         
-        c.osViSwapBuffer(&c.system_cfb[draw_frame]);
-        draw_frame ^= 1;
+        c.osViSwapBuffer(&c.system_cfb[gRenderedFramebuffer]);
+        gRenderedFramebuffer ^= 1;
+        gTimer += 1;
     }
 }
 
