@@ -16,9 +16,9 @@ pub fn setupTaskStructure(task: *c.OSTask) void {
     task.*.t.flags = c.OS_TASK_DP_WAIT | c.OS_TASK_LOADABLE;
     task.*.t.ucode_boot = &gfx.rspbootTextStart;
     task.*.t.ucode_boot_size = c.SP_BOOT_UCODE_SIZE;
-    task.*.t.ucode = &gfx.gspF3DEX2_fifoTextStart;
+    task.*.t.ucode = &gfx._binary_turbo3d_build_t3d_bin_start;
     task.*.t.ucode_size = c.SP_UCODE_SIZE;
-    task.*.t.ucode_data = &gfx.gspF3DEX2_fifoDataStart;
+    task.*.t.ucode_data = &gfx._binary_turbo3d_build_t3d_data_bin_start;
     task.*.t.ucode_data_size = c.SP_UCODE_DATA_SIZE;
 
     task.*.t.output_buff = c.system_rdpfifo;
@@ -36,11 +36,13 @@ pub fn setupTaskStructure(task: *c.OSTask) void {
 }
 
 
-var gfxBuff : [c.GLIST_LEN]gfx.Gfx = undefined;
+var gfxBuff : [c.GLIST_LEN]gfx.gtState = undefined;
 
 var myGfxTask : c.OSTask = undefined;
 var gRenderedFramebuffer: u16 = 0;
 var gTimer : u32 = 0;
+
+
 
 pub fn GameMain() callconv(.C) void {
 
@@ -56,11 +58,12 @@ pub fn GameMain() callconv(.C) void {
         SP.EndDisplayList(&gfxBuff[3]);
 
         myGfxTask.t.data_ptr = @ptrCast(*c_ulonglong, &gfxBuff);
-        c.osWritebackDCache(@ptrCast(*c_ulonglong, &gfxBuff), 0x2000 * 8);
+
+        c.osWritebackDCacheAll();
         c.osSpTaskLoad(&myGfxTask);
         c.osSpTaskStartGo(&myGfxTask);
 
-        _ = c.osRecvMesg(&rspMessageQ, null, c.OS_MESG_BLOCK);
+        // _ = c.osRecvMesg(&rspMessageQ, null, c.OS_MESG_BLOCK);
         _ = c.osRecvMesg(&rdpMessageQ, null, c.OS_MESG_BLOCK);  
 
         

@@ -30,3 +30,7 @@ const DP = struct {
     }
 
 };
+
+const GT = struct {
+
+};

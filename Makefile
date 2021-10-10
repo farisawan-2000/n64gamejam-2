@@ -111,6 +111,9 @@ test: $(ROM)
 test-pj64: $(ROM)
 	wine ~/Desktop/new64/Project64.exe $<
 
+load: $(ROM)
+	cp $< /media/faris/CF62-9261/
+
 ALL_DIRS := $(BUILD_DIR) $(addprefix $(BUILD_DIR)/,$(SRC_DIRS))
 
 # Make sure build directory exists before compiling anything
