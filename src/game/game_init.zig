@@ -63,11 +63,6 @@ pub fn GameMain() callconv(.C) void {
         _ = c.osRecvMesg(&rspMessageQ, null, c.OS_MESG_BLOCK);
         _ = c.osRecvMesg(&rdpMessageQ, null, c.OS_MESG_BLOCK);  
 
-        if (gTimer > 50) {
-            var crash = @intToPtr([*]align(2) volatile u16, 10);
-
-            crash.* = 0;
-        }
         
         c.osViSwapBuffer(&c.system_cfb[gRenderedFramebuffer]);
         gRenderedFramebuffer ^= 1;

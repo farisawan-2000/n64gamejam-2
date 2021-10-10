@@ -18,3 +18,9 @@ const gfx = @cImport({
     @cInclude("models.h");
     @cInclude("PR/gt.h");
 });
+
+pub inline fn DEBUG_CRASH() void {
+    var crash = @intToPtr([*]align(2) volatile u16, 10);
+
+    crash.* = 0;
+}
