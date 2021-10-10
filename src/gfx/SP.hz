@@ -1,0 +1,32 @@
+#pragma once
+#include "c_includes.hz"
+
+
+const SP = struct {
+    pub inline fn Segment(_g: *gfx.Gfx, segment: u32, ptr: *c_ushort) void {
+        _g.*.words.w0 = 
+                  (@intCast(u32, c.G_MOVEWORD) << 24)
+                | (@intCast(u32, c.G_MW_SEGMENT) << 16)
+                | (segment * 4);
+        _g.*.words.w1 = @ptrToInt(ptr);
+    }
+
+    pub inline fn DisplayList(_g: *gfx.Gfx, dl: *[*c]gfx.Gfx) void {
+        _g.*.words.w0 = (@intCast(u32, c.G_DL) << 24);
+        _g.*.words.w1 = (@ptrToInt(dl));
+    }
+    pub inline fn EndDisplayList(_g: *gfx.Gfx) void {
+        _g.*.words.w0 = (@intCast(u32, c.G_ENDDL) << 24);
+        _g.*.words.w1 = 0;
+    }
+
+};
+
+
+const DP = struct {
+    pub inline fn FullSync(_g: *gfx.Gfx) void {
+        _g.*.words.w0 = (@intCast(u32, c.G_RDPFULLSYNC) << 24);
+        _g.*.words.w1 = 0;
+    }
+
+};

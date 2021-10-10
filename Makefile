@@ -4,7 +4,7 @@ TARGET_STRING := gamejam2639
 TARGET := $(TARGET_STRING)
 
 # Preprocessor definitions
-DEFINES := _FINALROM=1 NDEBUG=1 F3DEX_GBI=1
+DEFINES := _FINALROM=1 NDEBUG=1 F3DEX_GBI_2=1
 
 SRC_DIRS :=
 
@@ -29,7 +29,7 @@ BOOT		:= /usr/lib/n64/PR/bootcode/boot.6102
 BOOT_OBJ	:= $(BUILD_DIR)/boot.6102.o
 
 # Directories containing source files
-SRC_DIRS += src src/buffers src/game asm src/math
+SRC_DIRS += src src/buffers src/game asm src/math models/clearCFB
 
 C_FILES           := $(foreach dir,$(SRC_DIRS),$(wildcard $(dir)/*.c))
 ZIG_FILES           := $(foreach dir,$(SRC_DIRS),$(wildcard $(dir)/*.zig))
@@ -123,7 +123,8 @@ DUMMY != mkdir -p $(ALL_DIRS)
 # Compile Zig code
 $(BUILD_DIR)/%.o: %.zig
 	$(call print,Compiling:,$<,$@)
-	$(V)zig build-obj $< -target mips-freestanding-gnu $(DEF_INC_CFLAGS) -femit-bin=$@
+	$(V)cpp $(CPPFLAGS) $< -o $(BUILD_DIR)/$*.zig
+	$(V)zig build-obj $(BUILD_DIR)/$*.zig -target mips-freestanding-gnu $(DEF_INC_CFLAGS) -femit-bin=$@
 	$(V)python3 tools/set_o32abi_bit.py $@
 
 # Compile C code

@@ -34,9 +34,11 @@ extern	OSContStatus	contStatus[MAXCONTROLLERS];
 extern	OSContPad	contPad[MAXCONTROLLERS];
 extern	u8		contExist;
 
-extern	u16		system_cfb[][SCREEN_WD*SCREEN_HT];
+extern	u16		system_cfb[2][SCREEN_WD*SCREEN_HT];
 extern  u64             system_rdpfifo[];
 extern  u64             system_rspyield[];
+
+
 
 /*
  *  Print macro for DEBUG

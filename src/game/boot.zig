@@ -7,13 +7,15 @@ const c = @cImport({
     @cInclude("n64_defs.h");
 });
 
-const game_init = @import("game_init.zig");
-
+extern fn GameMain() void;
 
 comptime {
     @export(zigboot, .{ .name = "boot", .linkage = .Strong });
-    // @export(zigidle, .{ .name = "idle", .linkage = .Strong });
-    // @export(zigmain, .{ .name = "main", .linkage = .Strong });
+    @export(zigidle, .{ .name = "idle", .linkage = .Strong });
+    @export(zigmain, .{ .name = "main", .linkage = .Strong });
+    @export(retraceMessageQ, .{ .name = "retraceMessageQ", .linkage = .Strong });
+    @export(rspMessageQ, .{ .name = "rspMessageQ", .linkage = .Strong });
+    @export(rdpMessageQ, .{ .name = "rdpMessageQ", .linkage = .Strong });
     @export(zigBootStack, .{ .name = "bootStack", .linkage = .Strong });
 }
 
@@ -64,18 +66,24 @@ pub fn zigmain(arg: ?*c_void) callconv(.C) void {
 
     _ = c.osContInit(&siMessageQ, &contExist, &contStatus);
 
-    game_init.GameMain();
+    GameMain();
 }
 
 
 pub fn zigidle(arg: ?*c_void) callconv(.C) void {
     _ = arg;
     c.osCreateViManager(c.OS_PRIORITY_VIMGR);
-    c.osViSetMode(@ptrCast(*c.OSViMode, &c.osViModeTable[c.OS_VI_NTSC_LAN1]));
+    c.osViSetMode(&c.osViModeNtscLan1);
 
     c.osCreatePiManager(c.OS_PRIORITY_PIMGR, &piMessageQ, &piMessages, c.NUM_PI_MSGS);
     c.osCreateThread(&zigMainThread, 1, zigmain, null, &zigMainStack[c.STACKSIZE / 4], 10);
     c.osStartThread(&zigMainThread);
+
+    c.osSetThreadPri(0,0);
+
+    while (true) {
+
+    }
 }
 
 

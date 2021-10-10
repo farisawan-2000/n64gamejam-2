@@ -20,6 +20,8 @@ OUTPUT_ARCH (mips)
     _##name##SegmentBssEnd = ADDR(.name.noload) + SIZEOF(.name.noload); \
     _##name##SegmentBssSize = SIZEOF(.name.noload);
 
+#define MODEL(path) path(.data*)
+
 SECTIONS
 {
    __romPos = 0;
@@ -40,6 +42,7 @@ SECTIONS
       */libgcc.a:*.o(.text);
 
       /usr/lib/n64/PR/rspboot.o(.text);
+      /usr/lib/n64/PR/gspF3DEX2.fifo.o(.text);
       BUILD_DIR/turbo3d_text.o(.data);
 
       /* data */
@@ -47,6 +50,7 @@ SECTIONS
 
       */libultra_rom.a:*.o(.data*);
 
+      /usr/lib/n64/PR/gspF3DEX2.fifo.o(.data*);
       /usr/lib/n64/PR/rspboot.o(.data*);
       BUILD_DIR/turbo3d_data.o(.data);
       /* rodata */
@@ -54,6 +58,9 @@ SECTIONS
 
       */libultra_rom.a:*.o(.*rodata*);
       */libgcc.a:*.o(.*rodata*);
+
+      /* temp model space */
+      MODEL(BUILD_DIR/models/clearCFB/clearCFB.o);
    }
    END_SEG(code)
    BEGIN_NOLOAD(code)

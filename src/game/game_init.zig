@@ -1,44 +1,72 @@
-const c = @cImport({
-    @cDefine("_FINAL_ROM", "1");
-    @cDefine("TARGET_N64", "1");
-    @cDefine("F3DEX_GBI_2", "1");
-    @cDefine("_LANGUAGE_C", "1");
-    @cInclude("ultra64.h");
-    @cInclude("n64_defs.h");
-});
+#include "c_includes.hz"
+#include "gfx/SP.hz"
 
-const gfx = @cImport({
-    @cDefine("_FINAL_ROM", "1");
-    @cDefine("TARGET_N64", "1");
-    @cDefine("F3DEX_GBI_2", "1");
-    @cDefine("_LANGUAGE_C", "1");
-    @cInclude("PR/gt.h");
-});
+comptime {
+    @export(GameMain, .{ .name = "GameMain", .linkage = .Strong });
+    @export(setupTaskStructure, .{ .name = "setupTaskStructure", .linkage = .Strong });
+    @export(gfxBuff, .{ .name = "gfxBuff", .linkage = .Strong });
+    @export(myGfxTask, .{ .name = "myGfxTask", .linkage = .Strong});
+}
+extern var retraceMessageQ : c.OSMesgQueue;
+extern var rspMessageQ : c.OSMesgQueue;
+extern var rdpMessageQ : c.OSMesgQueue;
 
-// comptime {
-//     @import(comptime path: []u8) type
-// }
-const boot = @import("boot.zig");
+pub fn setupTaskStructure(task: *c.OSTask) callconv(.C) void {
+    task.*.t.type = c.M_GFXTASK;
+    task.*.t.flags = c.OS_TASK_DP_WAIT | c.OS_TASK_LOADABLE;
+    task.*.t.ucode_boot = &gfx.rspbootTextStart;
+    task.*.t.ucode_boot_size = c.SP_BOOT_UCODE_SIZE;
+    task.*.t.ucode = &gfx.gspF3DEX2_fifoTextStart;
+    task.*.t.ucode_size = c.SP_UCODE_SIZE;
+    task.*.t.ucode_data = &gfx.gspF3DEX2_fifoDataStart;
+    task.*.t.ucode_data_size = c.SP_UCODE_DATA_SIZE;
+
+    task.*.t.output_buff = c.system_rdpfifo;
+    task.*.t.output_buff_size = @ptrToInt(c.system_rdpfifo) + c.RDPFIFO_SIZE;
+
+    task.*.t.yield_data_ptr = c.system_rspyield;
+    task.*.t.yield_data_size = c.OS_YIELD_DATA_SIZE;
+
+    // unused
+    task.*.t.dram_stack = null;
+    task.*.t.dram_stack_size = 0;
+
+    task.*.t.data_ptr = null;
+    task.*.t.data_size = 0;
+}
 
 
+var gfxBuff : [c.GLIST_LEN]gfx.Gfx = undefined;
 
-pub fn GameMain() void {
+var myGfxTask : c.OSTask = undefined;
+
+pub fn GameMain() callconv(.C) void {
     var draw_frame: u8 = 0;
-    // var gp: ?*gfx.Gfx = null;
+
+    setupTaskStructure(&myGfxTask);
 
     while(true) {
-        _ = c.osRecvMesg(@ptrCast([*c]c.OSMesgQueue, &boot.retraceMessageQ), null, c.OS_MESG_BLOCK);
+        _ = c.osRecvMesg(&retraceMessageQ, null, c.OS_MESG_BLOCK);
 
-        var i : u32 = 0;
-        var j : u32 = 0;
-        while (i < c.SCREEN_WD) {
-            while (j < c.SCREEN_HT / 2) {
-                c.system_cfb[draw_frame][(i * c.SCREEN_WD) + j] = 0xFFFF;
-            }
-        }
+        SP.Segment(&gfxBuff[0], c.CFB_SEGMENT, @ptrCast(*c_ushort, &c.system_cfb[draw_frame]));
+        SP.DisplayList(&gfxBuff[1], &gfx.clear_cfb);
+
+        DP.FullSync(&gfxBuff[2]);
+        SP.EndDisplayList(&gfxBuff[3]);
+
+        myGfxTask.t.data_ptr = @ptrCast(*c_ulonglong, &gfxBuff);
+        c.osWritebackDCache(@ptrCast(*c_ulonglong, &gfxBuff), 0x2000 * 8);
+        c.osSpTaskLoad(&myGfxTask);
+        c.osSpTaskStartGo(&myGfxTask);
+
+        _ = c.osRecvMesg(&rspMessageQ, null, c.OS_MESG_BLOCK);
+        _ = c.osRecvMesg(&rdpMessageQ, null, c.OS_MESG_BLOCK);  
+
         
-        c.osViSwapBuffer(@ptrCast(*c_void, &c.system_cfb[draw_frame]));
+        c.osViSwapBuffer(&c.system_cfb[draw_frame]);
         draw_frame ^= 1;
     }
 }
+
+
 
