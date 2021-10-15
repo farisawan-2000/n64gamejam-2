@@ -127,7 +127,7 @@ DUMMY != mkdir -p $(ALL_DIRS)
 $(BUILD_DIR)/%.o: %.zig
 	$(call print,Compiling:,$<,$@)
 	$(V)cpp $(CPPFLAGS) $< -o $(BUILD_DIR)/$*.zig
-	$(V)zig build-obj $(BUILD_DIR)/$*.zig -target mips-freestanding-gnu $(DEF_INC_CFLAGS) -femit-bin=$@
+	$(V)zig build-obj $(BUILD_DIR)/$*.zig -target mips-freestanding-gnu -mcpu mips3-gp64-fp64 -OReleaseSmall $(DEF_INC_CFLAGS) -femit-bin=$@
 	$(V)python3 tools/set_o32abi_bit.py $@
 
 # Compile C code
