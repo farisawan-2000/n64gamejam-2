@@ -66,7 +66,7 @@ Gfx dpGlobDPBlock[] = {
     gsDPPipeSync(),
     gsDPSetColorImage(G_IM_FMT_RGBA, G_IM_SIZ_16b, SCREEN_WD, system_cfb),
     gsDPSetFillColor(
-        (GPACK_RGBA5551(64, 0, 64, 1) << 16 | GPACK_RGBA5551(64, 0, 64, 1))),
+        (GPACK_RGBA5551(64, 64, 255, 1) << 16 | GPACK_RGBA5551(64, 64, 255, 1))),
     gsDPFillRectangle(0, 0, SCREEN_WD, SCREEN_HT - 1),
 
     gsDPPipeSync(),
@@ -92,11 +92,11 @@ gtGlobState dpGlobObjState = {0xffff, /* perspNorm */
                               {0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
                                0x0, /* segBases */
                                0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0},
-                              {
+                              { // viewport
                                   SCREEN_WD * 2,
                                   SCREEN_HT * 2,
                                   G_MAXZ / 2,
-                                  0, /* viewport */
+                                  0,
                                   SCREEN_WD * 2,
                                   SCREEN_HT * 2,
                                   G_MAXZ / 2,
@@ -123,13 +123,6 @@ typedef struct {
 
   Mtx   TranslateIn;
   Mtx   TranslateOut;
-  
-#if 0
-  Mtx   modeling1[MAXBLOCKS+1];
-  Mtx   modeling2[MAXBLOCKS+1];
-  Mtx   modeling3[MAXBLOCKS+1];
-  Mtx   modeling4[MAXBLOCKS+1];
-#endif
 
   gtState   objState[216+1];
 
@@ -142,16 +135,61 @@ typedef struct {
 } Dynamic;
 
 Dynamic dynamic;
-Dynamic *dynamicp;
+
+static void InitRsp(int clearScreen) {
+  static Vp vp;
+  Gfx *gptr;
+
+  vp.vp.vscale[0] = SCREEN_WD * 2;
+  vp.vp.vscale[1] = SCREEN_HT * 2;
+  vp.vp.vscale[2] = G_MAXZ / 2;
+  vp.vp.vscale[3] = 0;
+  vp.vp.vtrans[0] = SCREEN_WD * 2;
+  vp.vp.vtrans[1] = SCREEN_HT * 2;
+  vp.vp.vtrans[2] = G_MAXZ / 2;
+  vp.vp.vtrans[3] = 0;
+
+  /* handle variable viewport based on screen size: */
+  bcopy((char *)&(vp.vp), (char *)&(ggsp->sp.viewport), sizeof(Vp_t));
+
+  /* init global state: */
+  ggsp->sp.segBases[0] = 0x0; /* physical mapping */
+
+  /* set rendermode and cycletype for clear object: */
+  gtStateSetOthermode(&(ggsp->sp.rdpOthermode), GT_RENDERMODE,
+                      (G_RM_OPA_SURF | G_RM_OPA_SURF2));
+  gtStateSetOthermode(&(ggsp->sp.rdpOthermode), GT_CYCLETYPE, G_CYC_FILL);
+
+  gptr = (Gfx *)&(ggsp->sp.rdpCmds[0]);
+  gDPPipeSync(gptr++);
+  if (clearScreen) {
+    gDPSetScissor(gptr++, G_SC_NON_INTERLACE, 0, 0, SCREEN_WD, SCREEN_HT);
+    gDPSetCombineMode(gptr++, G_CC_SHADE, G_CC_SHADE);
+    gDPPipeSync(gptr++);
+    gDPSetColorImage(gptr++, G_IM_FMT_RGBA, G_IM_SIZ_16b, SCREEN_WD,
+                     system_cfb[gRenderedFramebuffer]);
+    gDPSetFillColor(gptr++, (GPACK_RGBA5551(64, 64, 255, 1) << 16 |
+                             GPACK_RGBA5551(64, 64, 255, 1)));
+    gDPFillRectangle(gptr++, 0, 0, SCREEN_WD, SCREEN_HT - 1);
+
+    gDPPipeSync(gptr++);
+  }
+  gDPEndDisplayList(gptr++);
+}
 
 void Main(void *arg) {
     Gfx *gp;
 
+    InitRsp(1);
 
     while (1) {
+
+        gtlistp = &(dynamic.gtlist[0]);
+        gp = &dynamic.glist;
+
         osRecvMesg(&retraceMessageQ, NULL, OS_MESG_BLOCK);
 
-        gtlistp->obj.gstatep = (gtGlobState *)NULL;
+        gtlistp->obj.gstatep = ggsp;
         gtlistp->obj.statep = &dpFinalObj;
         gtlistp->obj.vtxp = (Vtx *)NULL;
         gtlistp->obj.trip = (gtTriN *)NULL;
@@ -163,7 +201,9 @@ void Main(void *arg) {
         gtlistp->obj.trip = (gtTriN *)NULL;
         gtlistp++;
 
-        tlist.t.data_size = (u32)((gtlistp - dynamicp->gtlist) * sizeof(gtGfx));
+        tlist.t.data_size = (u32)((gtlistp - dynamic.gtlist) * sizeof(gtGfx));
+
+        tlist.t.data_ptr = (u64 *)&(dynamic.gtlist[0]);
 
         /* Write back dirty cache lines that need to be read by the RCP */
         osWritebackDCache(&dynamic, sizeof(dynamic));
@@ -177,5 +217,3 @@ void Main(void *arg) {
         gTimer++;
     }
 }
-
-/*======== End of main.c ========*/
