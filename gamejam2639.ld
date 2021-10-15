@@ -43,6 +43,7 @@ SECTIONS
 
       /usr/lib/n64/PR/rspboot.o(.text);
       /usr/lib/n64/PR/gspF3DEX2.fifo.o(.text);
+      gspTurbo3D_fifoTextStart = .;
       BUILD_DIR/turbo3d_text.o(.data);
 
       /* data */
@@ -52,6 +53,7 @@ SECTIONS
 
       /usr/lib/n64/PR/gspF3DEX2.fifo.o(.data*);
       /usr/lib/n64/PR/rspboot.o(.data*);
+      gspTurbo3D_fifoDataStart = .;
       BUILD_DIR/turbo3d_data.o(.data);
       /* rodata */
       BUILD_DIR/src*.o(.*rodata*);
