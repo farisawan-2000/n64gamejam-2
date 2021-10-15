@@ -167,7 +167,7 @@ static void InitRsp(int clearScreen) {
     gDPSetCombineMode(gptr++, G_CC_SHADE, G_CC_SHADE);
     gDPPipeSync(gptr++);
     gDPSetColorImage(gptr++, G_IM_FMT_RGBA, G_IM_SIZ_16b, SCREEN_WD,
-                     system_cfb[gRenderedFramebuffer]);
+                     system_cfb[gRenderedFramebuffer ^ 1]);
     gDPSetFillColor(gptr++, (GPACK_RGBA5551(64, 64, 255, 1) << 16 |
                              GPACK_RGBA5551(64, 64, 255, 1)));
     gDPFillRectangle(gptr++, 0, 0, SCREEN_WD, SCREEN_HT - 1);
@@ -183,13 +183,18 @@ void Main(void *arg) {
     InitRsp(1);
 
     while (1) {
-
+        osRecvMesg(&retraceMessageQ, NULL, OS_MESG_BLOCK);
+        
         gtlistp = &(dynamic.gtlist[0]);
         gp = &dynamic.glist;
 
-        osRecvMesg(&retraceMessageQ, NULL, OS_MESG_BLOCK);
-
         gtlistp->obj.gstatep = ggsp;
+        gtlistp->obj.statep = &dpFinalObj;
+        gtlistp->obj.vtxp = (Vtx *)NULL;
+        gtlistp->obj.trip = (gtTriN *)NULL;
+        gtlistp++;
+
+        gtlistp->obj.gstatep = NULL;
         gtlistp->obj.statep = &dpFinalObj;
         gtlistp->obj.vtxp = (Vtx *)NULL;
         gtlistp->obj.trip = (gtTriN *)NULL;
@@ -211,6 +216,8 @@ void Main(void *arg) {
 
         osRecvMesg(&rspMessageQ, NULL, OS_MESG_BLOCK);
         osRecvMesg(&rdpMessageQ, NULL, OS_MESG_BLOCK);
+
+        crash_screen_print(50, 50 ,"%d", gTimer);
 
         osViSwapBuffer(system_cfb[gRenderedFramebuffer]);
         gRenderedFramebuffer ^= 1;
