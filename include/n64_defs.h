@@ -40,6 +40,7 @@ extern	u16		system_cfb[2][SCREEN_WD*SCREEN_HT];
 extern  u64             system_rdpfifo[];
 extern  u64             system_rspyield[];
 
+#define A_COUNT(a) (sizeof((a)) / sizeof((a[0])))
 
 
 /*

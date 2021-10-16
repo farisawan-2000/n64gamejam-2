@@ -96,7 +96,7 @@ $(BUILD_DIR)/turbo3d_data.o: turbo3d/build/t3d.data.bin
 	mips-linux-gnu-ld -r -b binary $< -o $@
 
 $(BUILD_DIR)/turbo3d_text.o: turbo3d/build/t3d.bin
-	make -C turbo3d
+	make -C turbo3d NON_MATCHING=0
 	mips-linux-gnu-ld -r -b binary $< -o $@
 
 # Default target
