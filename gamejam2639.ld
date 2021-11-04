@@ -63,6 +63,7 @@ SECTIONS
 
       /* temp model space */
       MODEL(BUILD_DIR/models/clearCFB/clearCFB.o);
+      MODEL(BUILD_DIR/models/testMod/testMod.o);
    }
    END_SEG(code)
    BEGIN_NOLOAD(code)
@@ -75,6 +76,8 @@ SECTIONS
    }
    END_NOLOAD(code)
 
+   ASSERT((SIZEOF(.code) < 0x100000), "please make mainseg smaller")
+   
    . = CFB_ADDRESS;
 
    BEGIN_NOLOAD(system_cfb)

@@ -13,8 +13,8 @@
 .word  0x00000000               /* Checksum 1 (OVERWRITTEN BY MAKEMASK)*/
 .word  0x00000000               /* Checksum 2 (OVERWRITTEN BY MAKEMASK)*/
 .word  0x00000000               /* Unknown */
-.word  0x00000000               /* Unknown */
-.ascii "                    "   /* Internal ROM name (Max 20 characters) */
+.word  0x00000000        /* "" */
+.ascii "someone2639 horse   "   /* Internal ROM name (Max 20 characters) */
 .word  0x00000000               /* Unknown */
 /* Game ID (EXAMPLE: NSME) Begins here */
 .word  0x0000004E                /* Cartridge Type (N)*/

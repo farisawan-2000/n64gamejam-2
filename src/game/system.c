@@ -1,20 +1,9 @@
-/*---------------------------------------------------------------------
-  $Id: system.c,v 1.1.1.1 2002/05/02 03:27:18 blythe Exp $
-
-  File : system.c
-
-  Coded     by Yoshitaka Yasumoto.   Apr 11, 1997.
-  Copyright by Nintendo, Co., Ltd.           1997.
-  ---------------------------------------------------------------------*/
 #include <ultra64.h>
 #include "n64_defs.h"
 
-/*
- *  Call Main Function after the initial setting for the system
- */
 u64 bootStack[STACKSIZE / sizeof(u64)];
 
-extern void Main(void *);
+extern void gameloop(void *);
 
 static OSThread idleThread;
 static u64 idleThreadStack[STACKSIZE / sizeof(u64)];
@@ -41,50 +30,48 @@ OSContStatus contStatus[MAXCONTROLLERS];
 OSContPad contPad[MAXCONTROLLERS];
 u8 contExist;
 
-void mainproc(void *arg) {
-    /* Create Message Queue */
+void thread3_mainFunc(void *arg) {
     osCreateMesgQueue(&dmaMessageQ, &dmaMessageBuf, 1);
     osCreateMesgQueue(&rspMessageQ, &rspMessageBuf, 1);
     osCreateMesgQueue(&rdpMessageQ, &rdpMessageBuf, 1);
     osCreateMesgQueue(&siMessageQ, &siMessageBuf, 1);
     osCreateMesgQueue(&retraceMessageQ, &retraceMessageBuf, 1);
 
-    /* Connect Event to Message Queue */
     osSetEventMesg(OS_EVENT_SP, &rspMessageQ, NULL);
     osSetEventMesg(OS_EVENT_DP, &rdpMessageQ, NULL);
     osSetEventMesg(OS_EVENT_SI, &siMessageQ, NULL);
     osViSetEvent(&retraceMessageQ, NULL, 1);
 
-    /* Initialize Controller */
     osContInit(&siMessageQ, &contExist, contStatus);
 
-    /* Call Main Function */
-    Main(arg);
+    gameloop(arg);
 }
 
-static void idle(void *arg) {
-    /* Activate Vi Manager */
+static void idleFunc(void *arg) {
     osCreateViManager(OS_PRIORITY_VIMGR);
-    osViSetMode(&osViModeTable[OS_VI_NTSC_LAN1]);
+    switch (osTvType) {
+        case 0:
+            osViSetMode(&osViModeTable[OS_VI_PAL_LAN1]);
+        case 1:
+            osViSetMode(&osViModeTable[OS_VI_NTSC_LAN1]);
+        case 2:
+            osViSetMode(&osViModeTable[OS_VI_MPAL_LAN1]);
+    }
 
-    /* Activate Pi Manager */
     osCreatePiManager((OSPri) OS_PRIORITY_PIMGR, &piMessageQ, piMessages, NUM_PI_MSGS);
 
     crash_screen_init();
-    /* Activate Main Thread */
-    osCreateThread(&mainThread, 3, mainproc, arg, mainThreadStack + STACKSIZE / sizeof(u64), 10);
+    osCreateThread(&mainThread, 3, thread3_mainFunc, arg, mainThreadStack + STACKSIZE / sizeof(u64), 10);
     osStartThread(&mainThread);
-    osSetThreadPri(0, 0);
+    osSetThreadPri(NULL, 0);
 
-    /* Start Idle Loop */
-    while (1)
-        ;
+    while (1) {
+
+    }
 }
 
 void boot(void) {
     osInitialize();
-    osCreateThread(&idleThread, 1, idle, (void *) 0, idleThreadStack + STACKSIZE / sizeof(u64), 10);
+    osCreateThread(&idleThread, 1, idleFunc, (void *) 0, idleThreadStack + STACKSIZE / sizeof(u64), 10);
     osStartThread(&idleThread);
 }
-
-/*======== End of system.c ========*/

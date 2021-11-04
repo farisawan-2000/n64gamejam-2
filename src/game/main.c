@@ -151,12 +151,12 @@ typedef struct {
     Mtx TranslateIn;
     Mtx TranslateOut;
 
-    gtState objState[216 + 1];
+    gtState objState[512];
 
     Mtx viewing;
     Mtx identity;
 
-    gtGfx gtlist[512];
+    gtGfx turboGfxBuffer[512];
 
     Gfx glist[GLIST_LEN];
 } Dynamic;
@@ -243,9 +243,12 @@ Gfx VertexColored[] = {
     gsDPSetCycleType(G_CYC_1CYCLE),
     gsDPSetRenderMode(G_RM_AA_ZB_OPA_SURF, G_RM_AA_ZB_OPA_SURF2),
     gsDPSetCombineLERP(SHADE, 0, ENVIRONMENT, 0, 0, 0, 0, 1,
-        SHADE, 0, ENVIRONMENT, 0, 0, 0, 0, 1),
+                       SHADE, 0, ENVIRONMENT, 0, 0, 0, 0, 1),
 
-    gsDPSetEnvColor(0, 255, 255, 255),
+    gsDPSetEnvColor(0, 0, 255, 255),
+    gsDPEndDisplayList(),
+    gsDPEndDisplayList(),
+    gsDPEndDisplayList(),
     gsDPEndDisplayList(),
 };
 
@@ -277,20 +280,52 @@ gtGfx thing = {
     tris,
 };
 
+
+extern gtTriN mario_tris[83 * 2];
+extern Vtx test_Cube_mesh_vtx_0[182];
+
+
+gtState test_State = { 0x0,                  // renderState 0
+                         0x0,                  // textureState 4
+                         A_COUNT(test_Cube_mesh_vtx_0),          // vtxCount  8
+                         0,                    // vtxV0 9
+                         A_COUNT(mario_tris),        // triCount a
+                         0x0,                  // pad1 b
+                         VertexColored,                 // c
+                         gsDPClearOtherMode(), // 10
+                         {
+                             /* integer portion: */
+                             0x00010000, 0x00000000,
+                             0x00000001, 0x00000000,
+                             0x00000000, 0x00010000,
+                             0x00000000, 0x00000001,
+                             /* fractional portion: */
+                             0x00000000, 0x00000000,
+                             0x00000000, 0x00000000,
+                             0x00000000, 0x00000000,
+                             0x00000000, 0x00000000,
+                         } };
+
 float yaw = 0;
 
+extern gtGfx testO;
 static void SetupViewing(void) {
+    Mtx tmp;
     guPerspective(&dynamic.projection, &(ggsp->sp.perspNorm), 33, 320.0 / 240.0,
-                1, 2000, 1.0);
+                1, 2000, 1.0f);
     guLookAt(&dynamic.viewing,
         160, 120, 400,
         0, 0, 0,
         0, 1, 0
     );
-  guMtxCatL(&dynamic.viewing, &dynamic.projection, &dynamic.viewing);
+    guMtxCatL(&dynamic.viewing, &dynamic.projection, &tmp);
+    guMtxCatL(&triangle_obj.sp.transform, &tmp, &triangle_obj.sp.transform);
+    guMtxCatL(&test_State.sp.transform, &tmp, &test_State.sp.transform);
 }
 
-void Main(void *arg) {
+u32 gRCPTimer = 0;
+
+void gameloop(void *arg) {
     Gfx *gp;
 
     Mtx Sc, Ro, Tr, Ident;
@@ -300,34 +335,46 @@ void Main(void *arg) {
     // InitRsp(1);
 
     while (1) {
-        InitRsp(1);
         osRecvMesg(&retraceMessageQ, NULL, OS_MESG_BLOCK);
-
-        gtlistp = &(dynamic.gtlist[0]);
+        InitRsp(1);
+        gtlistp = &(dynamic.turboGfxBuffer[0]);
         gp = &dynamic.glist;
 
         gtDraw(gtlistp++, ggsp, &dpInitClearObj, NULL, NULL);
 
-        guRotateRPY(&triangle_obj.sp.transform, 0, 0, yaw++);
+        guRotateRPY(&triangle_obj.sp.transform, 90, yaw++, 0);
+        guRotateRPY(&test_State.sp.transform, 90, 0, yaw);
+        SetupViewing();
         gtDraw(gtlistp++, NULL, &triangle_obj, q0, tris);
+        if (gTimer > 100) {
+            gtDraw(gtlistp++, NULL, &test_State, test_Cube_mesh_vtx_0, mario_tris);
+
+
+
+            // start_mathutil_task();
+            // start_turbo3d_task();
+
+        }
         gtDraw(gtlistp++, NULL, &dpFinalObj, NULL, NULL);
-
         gtFinish(gtlistp++);
-
-        tlist.t.data_size = (u32)((gtlistp - dynamic.gtlist) * sizeof(gtGfx));
-
-        tlist.t.data_ptr = (u64 *) &(dynamic.gtlist[0]);
-
-        //  Write back dirty cache lines that need to be read by the RCP 
+        tlist.t.data_size = (u32)((gtlistp - dynamic.turboGfxBuffer) * sizeof(gtGfx));
+        tlist.t.data_ptr = dynamic.turboGfxBuffer;
         osWritebackDCache(&dynamic, sizeof(dynamic));
         osSpTaskStart(&tlist);
 
-        osRecvMesg(&rspMessageQ, NULL, OS_MESG_BLOCK);
-        osRecvMesg(&rdpMessageQ, NULL, OS_MESG_BLOCK);
-
-
-        crash_screen_print(50, 100, "hello world xd");
-
+        while (1) {
+            if (osRecvMesg(&rspMessageQ, NULL, OS_MESG_NOBLOCK) == 0) {
+                gRCPTimer = 0;
+                break;
+            }
+            if (osRecvMesg(&rdpMessageQ, NULL, OS_MESG_NOBLOCK) == 0) {
+                gRCPTimer = 0;
+                break;
+            }
+            gRCPTimer++;
+            if (gRCPTimer > 5) *(vs8*)0=0;
+        }
+        crash_screen_print(50,50, "%d", gTimer);
         osViSwapBuffer(system_cfb[gRenderedFramebuffer]);
         gRenderedFramebuffer ^= 1;
         gTimer++;
