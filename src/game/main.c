@@ -250,59 +250,10 @@ Gfx VertexColored[] = {
     gsDPEndDisplayList(),
 };
 
-gtState triangle_obj = { 0x0,                  // renderState 0
-                         0x0,                  // textureState 4
-                         A_COUNT(q0),          // vtxCount  8
-                         0,                    // vtxV0 9
-                         A_COUNT(tris),        // triCount a
-                         0x0,                  // pad1 b
-                         VertexColored,                 // c
-                         gsDPClearOtherMode(), // 10
-                         {
-                             /* integer portion: */
-                             0x00010000, 0x00000000,
-                             0x00000001, 0x00000000,
-                             0x00000000, 0x00010000,
-                             0x00000000, 0x00000001,
-                             /* fractional portion: */
-                             0x00000000, 0x00000000,
-                             0x00000000, 0x00000000,
-                             0x00000000, 0x00000000,
-                             0x00000000, 0x00000000,
-                         } };
-
-gtGfx thing = {
-    NULL,
-    &triangle_obj,
-    q0,
-    tris,
-};
 
 
 extern gtTriN mario_tris[83 * 2];
 extern Vtx test_Cube_mesh_vtx_0[182];
-
-
-gtState test_State = { 0x0,                  // renderState 0
-                         0x0,                  // textureState 4
-                         A_COUNT(test_Cube_mesh_vtx_0),          // vtxCount  8
-                         0,                    // vtxV0 9
-                         A_COUNT(mario_tris),        // triCount a
-                         0x0,                  // pad1 b
-                         VertexColored,                 // c
-                         gsDPClearOtherMode(), // 10
-                         {
-                             /* integer portion: */
-                             0x00010000, 0x00000000,
-                             0x00000001, 0x00000000,
-                             0x00000000, 0x00010000,
-                             0x00000000, 0x00000001,
-                             /* fractional portion: */
-                             0x00000000, 0x00000000,
-                             0x00000000, 0x00000000,
-                             0x00000000, 0x00000000,
-                             0x00000000, 0x00000000,
-                         } };
 
 float yaw = 0;
 
@@ -342,11 +293,9 @@ void gameloop(void *arg) {
 
         gtDraw(gtlistp++, ggsp, &dpInitClearObj, NULL, NULL);
 
-        guRotateRPY(&triangle_obj.sp.transform, 90, yaw++, 0);
-        guRotateRPY(&test_State.sp.transform, 90, 0, yaw);
         #define SCL 0.25f
         guScale(&Sc, SCL, SCL, SCL);
-        guRotateRPY(&test64_State.sp.transform, 0, yaw, 0);
+        guRotateRPY(&test64_State.sp.transform, 0, yaw++, 0);
         guMtxCatL(&test64_State.sp.transform, &Sc, &test64_State.sp.transform);
         test64_State.sp.rdpCmds = VertexColored;
 
