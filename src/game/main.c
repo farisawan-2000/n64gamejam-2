@@ -86,7 +86,7 @@ gtState dpInitClearObj =
     },
 };
 
-Gfx dpGlobDPBlock[] = {
+Gfx dpGlobDPBlock[30] = {
     gsDPPipeSync(),
     gsDPSetScissor(G_SC_NON_INTERLACE, 0, 0, SCREEN_WD, SCREEN_HT),
     gsDPSetCombineMode(G_CC_SHADE, G_CC_SHADE),
@@ -98,18 +98,6 @@ Gfx dpGlobDPBlock[] = {
 
     gsDPPipeSync(),
     gsDPEndDisplayList(),
-    gsDPNoOp(),
-    gsDPNoOp(),
-    gsDPNoOp(),
-    gsDPNoOp(),
-    gsDPNoOp(),
-    gsDPNoOp(),
-    gsDPNoOp(),
-    gsDPNoOp(),
-    gsDPNoOp(),
-    gsDPNoOp(),
-    gsDPNoOp(),
-    gsDPNoOp(),
 };
 
 gtGlobState dpGlobObjState = { 0xffff, /* perspNorm */
@@ -189,6 +177,15 @@ static void InitRsp(int clearScreen) {
     gptr = (Gfx *) &(ggsp->sp.rdpCmds[0]);
     gDPPipeSync(gptr++);
     if (clearScreen) {
+        gDPSetDepthImage(gptr++, OS_K0_TO_PHYSICAL(zbuffer));
+        gDPSetCycleType(gptr++, G_CYC_FILL);
+        gDPSetColorImage(gptr++, G_IM_FMT_RGBA, G_IM_SIZ_16b, SCREEN_WD,
+                 OS_K0_TO_PHYSICAL(zbuffer));
+        gDPSetFillColor(gptr++, (GPACK_ZDZ(G_MAXFBZ,0) << 16 | 
+                       GPACK_ZDZ(G_MAXFBZ,0)));
+        gDPFillRectangle(gptr++, 0, 0, SCREEN_WD-1, SCREEN_HT-1);
+
+
         gDPSetScissor(gptr++, G_SC_NON_INTERLACE, 0, 0, SCREEN_WD, SCREEN_HT);
         gDPSetCombineMode(gptr++, G_CC_SHADE, G_CC_SHADE);
         gDPPipeSync(gptr++);
@@ -199,8 +196,11 @@ static void InitRsp(int clearScreen) {
         gDPFillRectangle(gptr++, 0, 0, SCREEN_WD, SCREEN_HT - 1);
 
         gDPPipeSync(gptr++);
+
     }
     gDPEndDisplayList(gptr++);
+    gDPNoOp(gptr++);
+    gDPNoOp(gptr++);
 }
 
 Vtx q0[5] __attribute__((aligned(16))) = {
@@ -208,7 +208,7 @@ Vtx q0[5] __attribute__((aligned(16))) = {
     { 40, 40, 0, 0, (31 << 5), 0, 0, 0xff, 0, 0xff },
     { 40, -40, 0, 0, (31 << 5), (31 << 5), 0, 0xff, 0, 0xff },
     { -40, -40, 0, 0, 0, (31 << 5), 0xff, 0, 0, 0xff },
-    { 0, 0, 0, 0, 0, 0, 0xff, 0xff, 0xff, 0xff },
+    { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0xff },
 };
 
 gtTriN tris[] __attribute__((aligned(8))) = {
@@ -242,9 +242,9 @@ Gfx VertexColored[] = {
     gsDPPipeSync(),
     gsDPSetCycleType(G_CYC_1CYCLE),
     gsDPSetRenderMode(G_RM_AA_ZB_OPA_SURF, G_RM_AA_ZB_OPA_SURF2),
-    gsDPSetCombineLERP(SHADE, 0, ENVIRONMENT, 0, 0, 0, 0, 1,
-                       SHADE, 0, ENVIRONMENT, 0, 0, 0, 0, 1),
-
+    // gsDPSetCombineLERP(TEXEL0, 0, SHADE, 0, 0, 0, SHADE, 1,
+    //                    TEXEL0, 0, SHADE, 0, 0, 0, SHADE, 1),
+    gsDPSetCombineLERP(0, 0, 0, SHADE, 0, 0, 0, ENVIRONMENT, 0, 0, 0, SHADE, 0, 0, 0, ENVIRONMENT),
     gsDPSetEnvColor(0, 0, 255, 255),
     gsDPEndDisplayList(),
     gsDPEndDisplayList(),
@@ -309,6 +309,7 @@ gtState test_State = { 0x0,                  // renderState 0
 float yaw = 0;
 
 extern gtGfx testO;
+extern gtState test64_State;
 static void SetupViewing(void) {
     Mtx tmp;
     guPerspective(&dynamic.projection, &(ggsp->sp.perspNorm), 33, 320.0 / 240.0,
@@ -321,9 +322,13 @@ static void SetupViewing(void) {
     guMtxCatL(&dynamic.viewing, &dynamic.projection, &tmp);
     guMtxCatL(&triangle_obj.sp.transform, &tmp, &triangle_obj.sp.transform);
     guMtxCatL(&test_State.sp.transform, &tmp, &test_State.sp.transform);
+    guMtxCatL(&test64_State.sp.transform, &tmp, &test64_State.sp.transform);
 }
 
 u32 gRCPTimer = 0;
+
+
+extern gtGfx test64_Gfx;
 
 void gameloop(void *arg) {
     Gfx *gp;
@@ -344,11 +349,16 @@ void gameloop(void *arg) {
 
         guRotateRPY(&triangle_obj.sp.transform, 90, yaw++, 0);
         guRotateRPY(&test_State.sp.transform, 90, 0, yaw);
+        #define SCL 0.25f
+        guScale(&Sc, SCL, SCL, SCL);
+        guRotateRPY(&test64_State.sp.transform, 90, yaw, 0);
+        guMtxCatL(&test64_State.sp.transform, &Sc, &test64_State.sp.transform);
+        test64_State.sp.rdpCmds = VertexColored;
         SetupViewing();
         gtDraw(gtlistp++, NULL, &triangle_obj, q0, tris);
-        if (gTimer > 100) {
-            gtDraw(gtlistp++, NULL, &test_State, test_Cube_mesh_vtx_0, mario_tris);
-
+        if (gTimer > 60) {
+            // gtDraw(gtlistp++, NULL, &test_State, test_Cube_mesh_vtx_0, mario_tris);
+            gtDrawStatic(gtlistp++, test64_Gfx);
 
 
             // start_mathutil_task();

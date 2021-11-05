@@ -4,7 +4,45 @@ inVerts =False
 
 inTris = False
 
-vtxOffset = -32 # this assumption cannot go wrong
+vtxOffset = 0
+
+countTris = 0
+countVtx = 0
+
+gtStateTemplate = """\
+gtState %s_State = {
+    0x0, // renderState 0
+    0x0, // textureState 4
+    %d, // vtxCount  8
+    0, // vtxV0 9
+    %d, // triCount a
+    0x0, // some_flag b
+    NULL, // c
+    gsDPClearOtherMode(), // 10
+    {
+    // integer portion:
+        0x00010000, 0x00000000,
+        0x00000001, 0x00000000,
+        0x00000000, 0x00010000,
+        0x00000000, 0x00000001,
+    // fractional portion:
+        0x00000000, 0x00000000,
+        0x00000000, 0x00000000,
+        0x00000000, 0x00000000,
+        0x00000000, 0x00000000,
+    }
+};
+
+gtGfx %s_Gfx = {
+    NULL,
+    &%s_State,
+    %s,
+    %s,
+};
+
+"""
+vtxName = ""
+
 print("#include <ultra64.h>")
 print("#include <gbi.h>")
 print("#include <PR/gt.h>")
@@ -14,6 +52,9 @@ with open(sys.argv[1]) as f:
     for line in f:
         if "Vtx" in line:
             inVerts = True
+            countVtx = int(line.split("[")[1].split("]")[0])
+            vtxName = line.split()[1].split("[")[0]
+            vtxOffset = -countVtx
 
         if inVerts:
             print(line[:-1])
@@ -33,6 +74,7 @@ with open(sys.argv[1]) as f:
             if tokens[0] == "gsSPVertex":
                 vtxOffset += int(tokens[4])
             if tokens[0] == "gsSP1Triangle":
+                countTris += 1
                 print("    {%d, %d, %d, %d}," % (
                     int(tokens[1]) + vtxOffset,
                     int(tokens[2]) + vtxOffset,
@@ -40,6 +82,7 @@ with open(sys.argv[1]) as f:
                     int(tokens[4]) + vtxOffset
                 ))
             if tokens[0] == "gsSP2Triangles":
+                countTris += 2
                 print("    {%d, %d, %d, %d}, {%d, %d, %d, %d}," % (
                     int(tokens[1]) + vtxOffset,
                     int(tokens[2]) + vtxOffset,
@@ -53,9 +96,21 @@ with open(sys.argv[1]) as f:
 
         if "Gfx" in line:
             inTris = True
-            print("gtTriN %s_tris[] __attribute__((aligned(8))) = {" % sys.argv[2])
+            print("gtTriN %s_tris[] __attribute__((aligned(8))) = {" % (sys.argv[2]))
 
         if line[:-1] == "};" and inTris:
             inTris = False
             print(line[:-1])
             break
+
+print(gtStateTemplate % (
+    sys.argv[2],
+    countVtx,
+    countTris,
+    sys.argv[2],
+    sys.argv[2],
+    vtxName,
+    "%s_tris" % sys.argv[2]
+    ))
+
+

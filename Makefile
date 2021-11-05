@@ -31,7 +31,8 @@ BOOT_OBJ	:= $(BUILD_DIR)/boot.6102.o
 # Directories containing source files
 SRC_DIRS += src src/buffers src/game asm src/math src/engine \
 						models/clearCFB \
-						models/testMod
+						models/testMod \
+						models/test64
 
 C_FILES           := $(foreach dir,$(SRC_DIRS),$(wildcard $(dir)/*.c))
 ZIG_FILES           := $(foreach dir,$(SRC_DIRS),$(wildcard $(dir)/*.zig))
@@ -91,14 +92,14 @@ endef
 #==============================================================================#
 
 turbo3d/build/t3d.bin turbo3d/build/t3d.data.bin:
-	make -C turbo3d
+	make -C turbo3d COMPARE=0
 
 
 $(BUILD_DIR)/turbo3d_data.o: turbo3d/build/t3d.data.bin
 	mips-linux-gnu-ld -r -b binary $< -o $@
 
 $(BUILD_DIR)/turbo3d_text.o: turbo3d/build/t3d.bin
-	make -C turbo3d NON_MATCHING=0
+	make -C turbo3d NON_MATCHING=0 COMPARE=0
 	mips-linux-gnu-ld -r -b binary $< -o $@
 
 # Default target
