@@ -11,7 +11,7 @@ countVtx = 0
 
 gtStateTemplate = """\
 gtState %s_State = {
-    0x0, // renderState 0
+    GT_SHADING_SMOOTH | GT_ZBUFFER | GT_CULL_BACK, // renderState 0
     0x0, // textureState 4
     %d, // vtxCount  8
     0, // vtxV0 9
@@ -42,6 +42,8 @@ gtGfx %s_Gfx = {
 
 """
 vtxName = ""
+
+flag_fuzzer = 0
 
 print("#include <ultra64.h>")
 print("#include <gbi.h>")
@@ -83,16 +85,17 @@ with open(sys.argv[1]) as f:
                 ))
             if tokens[0] == "gsSP2Triangles":
                 countTris += 2
-                print("    {%d, %d, %d, %d}, {%d, %d, %d, %d}," % (
+                print("    {%d, %d, %d, 0}, {%d, %d, %d, 0}," % (
                     int(tokens[1]) + vtxOffset,
                     int(tokens[2]) + vtxOffset,
                     int(tokens[3]) + vtxOffset,
-                    int(tokens[4]) + vtxOffset,
+                    # int(tokens[4]) + vtxOffset,
                     int(tokens[5]) + vtxOffset,
                     int(tokens[6]) + vtxOffset,
                     int(tokens[7]) + vtxOffset,
-                    int(tokens[8]) + vtxOffset
+                    # int(tokens[8]) + vtxOffset
                 ))
+                flag_fuzzer += 2
 
         if "Gfx" in line:
             inTris = True

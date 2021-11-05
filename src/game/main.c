@@ -184,7 +184,7 @@ static void InitRsp(int clearScreen) {
         gDPSetFillColor(gptr++, (GPACK_ZDZ(G_MAXFBZ,0) << 16 | 
                        GPACK_ZDZ(G_MAXFBZ,0)));
         gDPFillRectangle(gptr++, 0, 0, SCREEN_WD-1, SCREEN_HT-1);
-
+        gDPPipeSync(gptr++);
 
         gDPSetScissor(gptr++, G_SC_NON_INTERLACE, 0, 0, SCREEN_WD, SCREEN_HT);
         gDPSetCombineMode(gptr++, G_CC_SHADE, G_CC_SHADE);
@@ -242,9 +242,7 @@ Gfx VertexColored[] = {
     gsDPPipeSync(),
     gsDPSetCycleType(G_CYC_1CYCLE),
     gsDPSetRenderMode(G_RM_AA_ZB_OPA_SURF, G_RM_AA_ZB_OPA_SURF2),
-    // gsDPSetCombineLERP(TEXEL0, 0, SHADE, 0, 0, 0, SHADE, 1,
-    //                    TEXEL0, 0, SHADE, 0, 0, 0, SHADE, 1),
-    gsDPSetCombineLERP(0, 0, 0, SHADE, 0, 0, 0, ENVIRONMENT, 0, 0, 0, SHADE, 0, 0, 0, ENVIRONMENT),
+    gsDPSetCombineLERP(0, 0, 0, SHADE, 0, 0, 0, 1, 0, 0, 0, SHADE, 0, 0, 0, 1),
     gsDPSetEnvColor(0, 0, 255, 255),
     gsDPEndDisplayList(),
     gsDPEndDisplayList(),
@@ -308,7 +306,6 @@ gtState test_State = { 0x0,                  // renderState 0
 
 float yaw = 0;
 
-extern gtGfx testO;
 extern gtState test64_State;
 static void SetupViewing(void) {
     Mtx tmp;
@@ -320,8 +317,6 @@ static void SetupViewing(void) {
         0, 1, 0
     );
     guMtxCatL(&dynamic.viewing, &dynamic.projection, &tmp);
-    guMtxCatL(&triangle_obj.sp.transform, &tmp, &triangle_obj.sp.transform);
-    guMtxCatL(&test_State.sp.transform, &tmp, &test_State.sp.transform);
     guMtxCatL(&test64_State.sp.transform, &tmp, &test64_State.sp.transform);
 }
 
@@ -351,20 +346,17 @@ void gameloop(void *arg) {
         guRotateRPY(&test_State.sp.transform, 90, 0, yaw);
         #define SCL 0.25f
         guScale(&Sc, SCL, SCL, SCL);
-        guRotateRPY(&test64_State.sp.transform, 90, yaw, 0);
+        guRotateRPY(&test64_State.sp.transform, 0, yaw, 0);
         guMtxCatL(&test64_State.sp.transform, &Sc, &test64_State.sp.transform);
         test64_State.sp.rdpCmds = VertexColored;
+
+
+        
         SetupViewing();
-        gtDraw(gtlistp++, NULL, &triangle_obj, q0, tris);
-        if (gTimer > 60) {
-            // gtDraw(gtlistp++, NULL, &test_State, test_Cube_mesh_vtx_0, mario_tris);
-            gtDrawStatic(gtlistp++, test64_Gfx);
+        gtDrawStatic(gtlistp++, test64_Gfx);
 
-
-            // start_mathutil_task();
-            // start_turbo3d_task();
-
-        }
+        // start_mathutil_task();
+        // start_turbo3d_task();
         gtDraw(gtlistp++, NULL, &dpFinalObj, NULL, NULL);
         gtFinish(gtlistp++);
         tlist.t.data_size = (u32)((gtlistp - dynamic.turboGfxBuffer) * sizeof(gtGfx));

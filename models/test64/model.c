@@ -97,7 +97,7 @@ gtState test64_State = {
     57, // vtxCount  8
     0, // vtxV0 9
     54, // triCount a
-    0, // pad1 b
+    0x0, // some_flag b
     NULL, // c
     gsDPClearOtherMode(), // 10
     {
