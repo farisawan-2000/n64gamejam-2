@@ -63,8 +63,8 @@ SECTIONS
 
       /* temp model space */
       MODEL(BUILD_DIR/models/clearCFB/clearCFB.o);
-      MODEL(BUILD_DIR/models/testMod/testMod.o);
       MODEL(BUILD_DIR/models/test64/model.o);
+      MODEL(BUILD_DIR/models/test64bf/model.o);
    }
    END_SEG(code)
    BEGIN_NOLOAD(code)

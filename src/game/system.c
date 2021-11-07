@@ -27,7 +27,7 @@ static OSMesg retraceMessageBuf;
 OSIoMesg dmaIOMessageBuf;
 
 OSContStatus contStatus[MAXCONTROLLERS];
-OSContPad contPad[MAXCONTROLLERS];
+OSContPad _controllers_internal[MAXCONTROLLERS];
 u8 contExist;
 
 void thread3_mainFunc(void *arg) {

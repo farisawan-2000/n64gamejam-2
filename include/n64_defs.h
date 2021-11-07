@@ -1,11 +1,5 @@
-/*---------------------------------------------------------------------
-  $Id: system.h,v 1.1.1.1 2002/05/02 03:27:18 blythe Exp $
-  
-  File : system.h
+#pragma once
 
-  Coded     by Yoshitaka Yasumoto.   Apr 11, 1997.
-  Copyright by Nintendo, Co., Ltd.           1997.
-  ---------------------------------------------------------------------*/
 #define	SCREEN_WD	320
 #define	SCREEN_HT	240
 #define SCREEN_WIDTH SCREEN_WD
@@ -33,7 +27,7 @@ extern	OSMesgQueue	rspMessageQ;
 extern	OSMesgQueue	rdpMessageQ;
 extern	OSMesgQueue	retraceMessageQ;
 extern	OSContStatus	contStatus[MAXCONTROLLERS];
-extern	OSContPad	contPad[MAXCONTROLLERS];
+extern	OSContPad	_controllers_internal[MAXCONTROLLERS];
 extern	u8		contExist;
 
 extern	u16		system_cfb[2][SCREEN_WD*SCREEN_HT];
@@ -42,6 +36,31 @@ extern  u64             system_rdpfifo[];
 extern  u64             system_rspyield[];
 
 #define A_COUNT(a) (sizeof((a)) / sizeof((a[0])))
+
+typedef struct {
+  union {
+    f32 x;
+    f32 roll;
+  };
+  union {
+    f32 y;
+    f32 pitch;
+  };
+  union {
+    f32 z;
+    f32 yaw;
+  };
+} Vector;
+
+typedef struct {
+  u16 button;
+  u16 held;
+  s8 stickX;
+  s8 stickY;
+  f32 angle;
+} Controller2639;
+
+typedef float Mtx4[4][4];
 
 
 /*
@@ -54,5 +73,3 @@ extern  u64             system_rspyield[];
 #endif
 
 #endif	/* _LANGUAGE_C */
-
-/*======== End of system.h ========*/

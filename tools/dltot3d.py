@@ -5,6 +5,7 @@ inVerts =False
 inTris = False
 
 vtxOffset = 0
+shouldAddNow = False
 
 countTris = 0
 countVtx = 0
@@ -56,7 +57,7 @@ with open(sys.argv[1]) as f:
             inVerts = True
             countVtx = int(line.split("[")[1].split("]")[0])
             vtxName = line.split()[1].split("[")[0]
-            vtxOffset = -countVtx
+            # vtxOffset = -countVtx
 
         if inVerts:
             print(line[:-1])
@@ -74,7 +75,10 @@ with open(sys.argv[1]) as f:
                          .split()
 
             if tokens[0] == "gsSPVertex":
-                vtxOffset += int(tokens[4])
+                if shouldAddNow:
+                    vtxOffset += int(tokens[4])
+                else:
+                    shouldAddNow = True
             if tokens[0] == "gsSP1Triangle":
                 countTris += 1
                 print("    {%d, %d, %d, %d}," % (

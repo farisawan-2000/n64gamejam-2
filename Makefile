@@ -32,7 +32,8 @@ BOOT_OBJ	:= $(BUILD_DIR)/boot.6102.o
 SRC_DIRS += src src/buffers src/game asm src/math src/engine \
 						models/clearCFB \
 						models/testMod \
-						models/test64
+						models/test64 \
+						models/test64bf
 
 C_FILES           := $(foreach dir,$(SRC_DIRS),$(wildcard $(dir)/*.c))
 ZIG_FILES           := $(foreach dir,$(SRC_DIRS),$(wildcard $(dir)/*.zig))

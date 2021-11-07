@@ -91,15 +91,30 @@ gtTriN test64_tris[] __attribute__((aligned(8))) = {
     {49, 56, 42, 0}, {49, 42, 44, 0},
     {51, 56, 49, 0}, {51, 54, 56, 0},
 };
+
+static u32 rdpComdsEpic[ ]= {
+    0xE7000000, 0x00000000, 0xFCFFFFFF, 0xFFFE793C,
+    0xFD100000, 0x002F7088, 0xE8000000, 0x00000000,
+    0xF5000100, 0x07000000, 0xE6000000, 0x00000000,
+    0xF0000000, 0x0703C000, 0xE7000000, 0x00000000,
+    0xFD500000, 0x802F6988, 0xF5500000, 0x07080200,
+    0xE6000000, 0x00000000, 0xF3000000, 0x070FF400,
+    0xE7000000, 0x00000000, 0xF5400400, 0x00080200,
+    0xF2000000, 0x0007C07C, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+};
+
 gtState test64_State = {
-    GT_SHADING_SMOOTH | GT_ZBUFFER | GT_CULL_BACK, // renderState 0
+    0x2202, // renderState 0
     0x0, // textureState 4
     57, // vtxCount  8
     0, // vtxV0 9
     54, // triCount a
     0x0, // some_flag b
-    NULL, // c
-    gsDPClearOtherMode(), // 10
+    rdpComdsEpic, // c
+    0xEF08AC000F0A4000, // 10
     {
     // integer portion:
         0x00010000, 0x00000000,
