@@ -3,6 +3,29 @@
 #include <PR/gt.h>
 #include "n64_defs.h"
 #include "gtHelpers.h"
+
+extern Vtx blok_Cube_mesh_vtx_0[57];
+extern gtTriN test64_tris[] __attribute__((aligned(8)));
+extern gtGfx test64_Gfx;
+extern gtState test64_State;
+
+Object2639 test64_Obj = {
+    {0, 0, 0},
+    {0, 0, 0},
+    {1, 1, 1},
+
+    1,
+    &test64_State,
+
+    1,
+    &test64_Gfx,
+
+    NULL,
+    NULL,
+
+};
+
+
 Vtx blok_Cube_mesh_vtx_0[57] = {
 	{{{-400, -100, -400},0, {368, 752},{0x81, 0x0, 0x0, 0xFF}}},
 	{{{-400, -100, 400},0, {368, 1008},{0x81, 0x0, 0x0, 0xFF}}},
@@ -92,20 +115,6 @@ gtTriN test64_tris[] __attribute__((aligned(8))) = {
     {51, 56, 49, 0}, {51, 54, 56, 0},
 };
 
-static u32 rdpComdsEpic[ ]= {
-    0xE7000000, 0x00000000, 0xFCFFFFFF, 0xFFFE793C,
-    0xFD100000, 0x002F7088, 0xE8000000, 0x00000000,
-    0xF5000100, 0x07000000, 0xE6000000, 0x00000000,
-    0xF0000000, 0x0703C000, 0xE7000000, 0x00000000,
-    0xFD500000, 0x802F6988, 0xF5500000, 0x07080200,
-    0xE6000000, 0x00000000, 0xF3000000, 0x070FF400,
-    0xE7000000, 0x00000000, 0xF5400400, 0x00080200,
-    0xF2000000, 0x0007C07C, 0x00000000, 0x00000000,
-    0x00000000, 0x00000000, 0x00000000, 0x00000000,
-    0x00000000, 0x00000000, 0x00000000, 0x00000000,
-    0x00000000, 0x00000000, 0x00000000, 0x00000000,
-};
-
 gtState test64_State = {
     0x2202, // renderState 0
     0x0, // textureState 4
@@ -113,8 +122,8 @@ gtState test64_State = {
     0, // vtxV0 9
     54, // triCount a
     0x0, // some_flag b
-    rdpComdsEpic, // c
-    0xEF08AC000F0A4000, // 10
+    NULL, // c
+    gsDPClearOtherMode(), // 10
     {
     // integer portion:
         0x00010000, 0x00000000,

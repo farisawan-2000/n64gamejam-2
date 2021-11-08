@@ -10,9 +10,10 @@ shouldAddNow = False
 countTris = 0
 countVtx = 0
 
+# renderstate is 0x2202
 gtStateTemplate = """\
 gtState %s_State = {
-    GT_SHADING_SMOOTH | GT_ZBUFFER | GT_CULL_BACK, // renderState 0
+    %s, // renderState 0
     0x0, // textureState 4
     %d, // vtxCount  8
     0, // vtxV0 9
@@ -45,6 +46,9 @@ gtGfx %s_Gfx = {
 vtxName = ""
 
 flag_fuzzer = 0
+
+listOfVtxLoads = []
+numTriLoads = 0
 
 print("#include <ultra64.h>")
 print("#include <gbi.h>")
@@ -103,7 +107,8 @@ with open(sys.argv[1]) as f:
 
         if "Gfx" in line:
             inTris = True
-            print("gtTriN %s_tris[] __attribute__((aligned(8))) = {" % (sys.argv[2]))
+            print("gtTriN %s_tris_%d[] __attribute__((aligned(8))) = {" % (sys.argv[2], numTriLoads))
+            numTriLoads+=1
 
         if line[:-1] == "};" and inTris:
             inTris = False
@@ -120,4 +125,27 @@ print(gtStateTemplate % (
     "%s_tris" % sys.argv[2]
     ))
 
+
+gtGfxStart = "gtGfx %s_GfxList[] = {"
+
+gtGfxTemplate = """\
+    {
+        NULL,
+        NULL,
+        %s,
+        %s,
+    },"""
+
+gtGfxEnd = "};"
+
+print(gtGfxStart % sys.argv[2])
+for i, x in enumerate(listOfVtxLoads):
+    print(gtGfxTemplate % (
+        listOfVtxLoads[i],
+        "%s_tris_%d" % (sys.argv[2], i)
+        )
+
+    )
+
+print(gtGfxEnd)
 

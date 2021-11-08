@@ -146,25 +146,8 @@ gtGlobState *ggsp2 = &(dpGlobObjState2);
 
 u64 dram_stack[SP_DRAM_STACK_SIZE64]; /* used for matrix stack */
 
-gtGfx *gtlistp;
+gtGfx *gTurboGfxPtr;
 Gfx *glistp; /* global for test case procs */
-
-typedef struct {
-    Mtx projection;
-    Mtx viewing;
-    Mtx identity;
-
-    float projectionF[4][4];
-    float viewingF[4][4];
-    float identityF[4][4];
-
-    gtState objState[512];
-
-
-    gtGfx turboGfxBuffer[512];
-
-    Gfx glist[GLIST_LEN];
-} GameGFXState;
 
 GameGFXState dynamic;
 
@@ -257,10 +240,11 @@ gtTriN tris[] __attribute__((aligned(8))) = {
 
 Gfx VertexColored[] = {
     gsDPPipeSync(),
-    gsDPSetCycleType(G_CYC_1CYCLE),
-    gsDPSetRenderMode(G_RM_AA_ZB_OPA_SURF, G_RM_AA_ZB_OPA_SURF2),
-    gsDPSetCombineLERP(0, 0, 0, SHADE, 0, 0, 0, 1, 0, 0, 0, SHADE, 0, 0, 0, 1),
-    gsDPSetEnvColor(0, 0, 255, 255),
+    gsDPSetCombineMode(G_CC_SHADE, G_CC_SHADE),
+    gsDPEndDisplayList(),
+    gsDPEndDisplayList(),
+    gsDPEndDisplayList(),
+    gsDPEndDisplayList(),
     gsDPEndDisplayList(),
     gsDPEndDisplayList(),
     gsDPEndDisplayList(),
@@ -296,7 +280,8 @@ static void SetupViewing(void) {
     float vp[4][4];
     float mvp[4][4];
 
-    guMtxCatF(&dynamic.viewingF, &dynamic.projectionF, vp);
+    guMtxCatF(dynamic.viewingF, dynamic.projectionF, vp);
+    guMtxCatL(&dynamic.viewing, &dynamic.projection, &dynamic.VP);
 
     Mtx4 M;
     guMtxL2F(M, &test64_State.sp.transform);
@@ -315,9 +300,7 @@ u32 gRCPTimer = 0;
 void gameloop(void *arg) {
     Gfx *gp;
 
-    Mtx4 Sc, Ro, ScRo, Tr, Ident;
-
-    guMtxIdent(&Ident);
+    Mtx4 Sc, Ro, ScRo, Tr;
 
     // InitRsp(1);
 
@@ -329,13 +312,13 @@ void gameloop(void *arg) {
 
 
         InitRsp(1);
-        gtlistp = &(dynamic.turboGfxBuffer[0]);
+        gTurboGfxPtr = &(dynamic.turboGfxBuffer[0]);
         gp = &dynamic.glist;
 
-        gtDraw(gtlistp++, ggsp, &dpInitClearObj, NULL, NULL);
+        gtDraw(gTurboGfxPtr++, ggsp, &dpInitClearObj, NULL, NULL);
 
         #define SCL 0.25f
-        #define TRSL 400
+        #define TRSL 150
         Mtx4 tmp;
         gtStateSetOthermode(&(ggsp2->sp.rdpOthermode), GT_RENDERMODE, (G_RM_ZB_OPA_SURF | G_RM_ZB_OPA_SURF2));
         gtStateSetOthermode(&(ggsp2->sp.rdpOthermode), GT_CYCLETYPE, G_CYC_1CYCLE);
@@ -347,6 +330,10 @@ void gameloop(void *arg) {
         guMtxCatF(ScRo, Tr, tmp);
         guMtxF2L(tmp, &test64_State.sp.transform);
 
+        #define SCL2 1.0f
+        guScaleF(Sc, SCL2, SCL2, SCL2);
+        guRotateRPYF(Ro, 0, yaw, 0);
+        guMtxCatF(Sc, Ro, ScRo);
         guTranslateF(Tr, 0, 0, TRSL);
         guMtxCatF(ScRo, Tr, tmp);
         guMtxF2L(tmp, &test64bf_State.sp.transform);
@@ -354,21 +341,24 @@ void gameloop(void *arg) {
         // test64_State.sp.rdpCmds = rdpComdsEpic;
         // test64bf_State.sp.rdpCmds = rdpComdsEpic;
 
+        extern Object2639 test64_Obj;
+
         gtStateSetOthermode(&(test64_State.sp.rdpOthermode), GT_RENDERMODE, (G_RM_ZB_OPA_SURF | G_RM_ZB_OPA_SURF2));
         gtStateSetOthermode(&(test64_State.sp.rdpOthermode), GT_CYCLETYPE, G_CYC_1CYCLE);
         gtStateSetOthermode(&(test64bf_State.sp.rdpOthermode), GT_RENDERMODE, (G_RM_ZB_OPA_SURF | G_RM_ZB_OPA_SURF2));
         gtStateSetOthermode(&(test64bf_State.sp.rdpOthermode), GT_CYCLETYPE, G_CYC_1CYCLE);
         
+        // Object_Draw(&test64_Obj);
         SetupViewing();
         // test64_Gfx.obj.gstatep = ggsp2;
-        gtDrawStatic(gtlistp++, test64_Gfx);
-        gtDrawStatic(gtlistp++, test64bf_Gfx);
+        gtDrawStatic(gTurboGfxPtr++, test64_Gfx);
+        gtDrawStatic(gTurboGfxPtr++, test64bf_Gfx);
 
         // start_mathutil_task();
         // start_turbo3d_task();
-        gtDraw(gtlistp++, NULL, &dpFinalObj, NULL, NULL);
-        gtFinish(gtlistp++);
-        tlist.t.data_size = (u32)((gtlistp - dynamic.turboGfxBuffer) * sizeof(gtGfx));
+        gtDraw(gTurboGfxPtr++, NULL, &dpFinalObj, NULL, NULL);
+        gtFinish(gTurboGfxPtr++);
+        tlist.t.data_size = (u32)((gTurboGfxPtr - dynamic.turboGfxBuffer) * sizeof(gtGfx));
         tlist.t.data_ptr = dynamic.turboGfxBuffer;
         osWritebackDCache(&dynamic, sizeof(dynamic));
         osSpTaskStart(&tlist);

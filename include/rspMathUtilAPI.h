@@ -16,42 +16,35 @@ enum RMUMtxOps {
 };
 
 // up to 64 packets are allowed
-#define RMU_MAX_PKT 64
-typedef struct RMUPacket {
-	u8 command;
-	u8 siz;
-	union {
-		u8 data[];
-		u16 data16[];
-		u32 data32[];
-		u32 *dataPtr[];
-	};
-} RMUPacket;
+// #define RMU_MAX_PKT 64
+// typedef struct RMUPacket {
+// 	u8 command;
+// 	u8 siz;
+// 	union {
+// 		u8 data[];
+// 		u16 data16[];
+// 		u32 data32[];
+// 		u32 *dataPtr[];
+// 	};
+// } RMUPacket;
 
 
-#define rmuMulMtx(pkt, mtx) {\
-	RMUPacket *_p = pkt; \
-	_p->command = RMU_MTX_MUL; \
-	_p->data = mtx;\
-}
+// #define rmuMulMtx(pkt, mtx) {\
+// 	RMUPacket *_p = pkt; \
+// 	_p->command = RMU_MTX_MUL; \
+// 	_p->data = mtx;\
+// }
+
+// #define rmuCommitMtx(pkt, finalLoc) {\
+// 	RMUPacket *_p = pkt; \
+// 	_p->command = RMU_MTX_COMMIT; \
+// 	_p->data = finalLoc; \
+// }
 
 
-#define rmuScaleMatrix(pkt, mtx) {\
-	RMUPacket *_p = pkt; \
-	_p->command = RMU_MTX_MUL; \
-	_p->data = mtx;\
-}
-
-#define rmuCommitMtx(pkt, finalLoc) {\
-	RMUPacket *_p = pkt; \
-	_p->command = RMU_MTX_COMMIT; \
-	_p->data = finalLoc; \
-}
-
-
-#define rmuFinish(pkt) {\
-	RMUPacket *_p = pkt; \
-	_p->command = RMU_MTX_FINISH; \
-}
+// #define rmuFinish(pkt) {\
+// 	RMUPacket *_p = pkt; \
+// 	_p->command = RMU_MTX_FINISH; \
+// }
 
 

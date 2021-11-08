@@ -17,6 +17,22 @@
     _g->obj.trip = (gtTriN *) tri; \
 }
 
+#define gtPushState(gt_pointer, state) { \
+    gtGfx *_g = gt_pointer; \
+    _g->obj.gstatep = NULL; \
+    _g->obj.statep = state; \
+    _g->obj.vtxp = (Vtx *) NULL; \
+    _g->obj.trip = (gtTriN *) NULL; \
+}
+
+#define gtPushGlobState(gt_pointer, globstate) { \
+    gtGfx *_g = gt_pointer; \
+    _g->obj.gstatep = globstate; \
+    _g->obj.statep = NULL; \
+    _g->obj.vtxp = (Vtx *) NULL; \
+    _g->obj.trip = (gtTriN *) NULL; \
+}
+
 #define gtDrawStatic(gt_pointer, myobj) { \
     gtGfx *_g = gt_pointer; \
     _g->obj.gstatep = myobj.obj.gstatep; \
@@ -24,4 +40,13 @@
     _g->obj.vtxp = (Vtx *) myobj.obj.vtxp; \
     _g->obj.trip = (gtTriN *) myobj.obj.trip; \
 }
+
+#define gtDrawStaticP(gt_pointer, myobj) { \
+    gtGfx *_g = gt_pointer; \
+    _g->obj.gstatep = myobj->obj.gstatep; \
+    _g->obj.statep = myobj->obj.statep; \
+    _g->obj.vtxp = (Vtx *) myobj->obj.vtxp; \
+    _g->obj.trip = (gtTriN *) myobj->obj.trip; \
+}
+
 

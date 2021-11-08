@@ -1,4 +1,5 @@
 #pragma once
+#include <PR/gt.h>
 
 #define	SCREEN_WD	320
 #define	SCREEN_HT	240
@@ -38,6 +39,25 @@ extern  u64             system_rspyield[];
 #define A_COUNT(a) (sizeof((a)) / sizeof((a[0])))
 
 typedef struct {
+    Mtx projection;
+    Mtx viewing;
+    Mtx VP;
+    Mtx identity;
+
+    float projectionF[4][4];
+    float viewingF[4][4];
+    float identityF[4][4];
+
+    gtState objState[512];
+
+
+    gtGfx turboGfxBuffer[512];
+
+    Gfx glist[GLIST_LEN];
+} GameGFXState;
+extern GameGFXState dynamic;
+
+typedef struct {
   union {
     f32 x;
     f32 roll;
@@ -60,8 +80,26 @@ typedef struct {
   f32 angle;
 } Controller2639;
 
+typedef struct Object2639 {
+    Vector move;
+    Vector rotate;
+    Vector scale;
+
+    // right now every material will have the same transform
+    u32 materialCount;
+    gtState *materialList;
+
+    // sentinel terminated lists are cringe
+    u32 segmentCount;
+    gtGfx *modelList;
+
+    void (*init)(struct Object2639 *o);
+    void (*loop)(struct Object2639 *o);
+} Object2639;
+
 typedef float Mtx4[4][4];
 
+extern gtGfx *gTurboGfxPtr;
 
 /*
  *  Print macro for DEBUG

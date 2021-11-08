@@ -29,7 +29,7 @@ BOOT		:= /usr/lib/n64/PR/bootcode/boot.6102
 BOOT_OBJ	:= $(BUILD_DIR)/boot.6102.o
 
 # Directories containing source files
-SRC_DIRS += src src/buffers src/game asm src/math src/engine \
+SRC_DIRS += src src/buffers src/game asm src/math src/engine2639 \
 						models/clearCFB \
 						models/testMod \
 						models/test64 \

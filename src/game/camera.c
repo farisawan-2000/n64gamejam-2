@@ -32,9 +32,9 @@ void CameraApply(void) {
     );
 }
 
-void CameraPosApply(Vector *v, f32 dist, f32 yaw) {
+void CameraPosApply(Vector *v, f32 dist, f32 yaw, f32 pitch) {
     VectorExtend(v, v, dist, 0,
-        (M_PI / 180.0f) * sCameraRPY.yaw
+        (M_PI / 180.0f) * yaw
     );
 }
 
@@ -42,43 +42,43 @@ void CameraPosApply(Vector *v, f32 dist, f32 yaw) {
 // TODO: look at player
 #define MV_SPD 6.0f
 #define ANG_CLMP 180.0f
-#define clampA(x) if ((x) > ANG_CLMP) {(x) = ANG_CLMP;}
+#define clampA(x) if ((x) > ANG_CLMP) {(x) = -ANG_CLMP;}
 #define clampAN(x) if ((x) < -ANG_CLMP) {(x) = ANG_CLMP;}
 
 static void CameraUpdate_Player(void) {
     if (GameControllers[0].stickX != 0) {
         if (GameControllers[0].stickX > 0) {
-            CameraPosApply(&sCameraSpot, MV_SPD, sCameraRPY.yaw + 90);
+            CameraPosApply(&sCameraSpot, -MV_SPD, sCameraRPY.yaw + 90, sCameraRPY.pitch);
         } else {
-            CameraPosApply(&sCameraSpot, -MV_SPD, sCameraRPY.yaw + 90);
+            CameraPosApply(&sCameraSpot, MV_SPD, sCameraRPY.yaw + 90, sCameraRPY.pitch);
         }
     }
     if (GameControllers[0].stickY != 0) {
         if (GameControllers[0].stickY > 0) {
-            CameraPosApply(&sCameraSpot, MV_SPD, sCameraRPY.yaw);
+            CameraPosApply(&sCameraSpot, MV_SPD, sCameraRPY.yaw, sCameraRPY.pitch);
         } else {
-            CameraPosApply(&sCameraSpot, -MV_SPD, sCameraRPY.yaw);
+            CameraPosApply(&sCameraSpot, -MV_SPD, sCameraRPY.yaw, sCameraRPY.pitch);
         }
     }
 
     if (GameControllers[0].button & R_CBUTTONS) {
-        sCameraRPY.yaw += 1;
-    }
-    if (GameControllers[0].button & L_CBUTTONS) {
         sCameraRPY.yaw -= 1;
     }
+    if (GameControllers[0].button & L_CBUTTONS) {
+        sCameraRPY.yaw += 1;
+    }
     if (GameControllers[0].button & U_CBUTTONS) {
-        sCameraRPY.pitch += 1;
+        sCameraRPY.pitch -= 1;
     }
     if (GameControllers[0].button & D_CBUTTONS) {
-        sCameraRPY.pitch -= 1;
+        sCameraRPY.pitch += 1;
     }
 
     if (GameControllers[0].button & A_BUTTON) {
-        sCameraSpot.y += 1;
+        sCameraSpot.y += 2;
     }
     if (GameControllers[0].button & B_BUTTON) {
-        sCameraSpot.y -= 1;
+        sCameraSpot.y -= 2;
     }
 
     clampA(sCameraRPY.yaw);

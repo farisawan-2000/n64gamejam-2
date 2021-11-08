@@ -3,7 +3,7 @@
 
 
 void t3d_assignMat(gtState *p, Gfx *mat) {
-    p->rdpCmds = mat;
+    p->sp.rdpCmds = mat;
 }
 
 void t3d_parseOthermode(gtState *p, Gfx *dl) {
@@ -16,6 +16,6 @@ void t3d_parseOthermode(gtState *p, Gfx *dl) {
         dl++;
     }
 
-    p->rdpOthermode = othermode;
+    p->sp.rdpOthermode = othermode;
 }
 
