@@ -124,26 +124,6 @@ gtGlobState dpGlobObjState = { 0xffff, /* perspNorm */
                                &(dpGlobDPBlock[0]) };
 gtGlobState *ggsp = &(dpGlobObjState);
 
-gtGlobState dpGlobObjState2 = { 0xffff, /* perspNorm */
-                               0x0,
-                               0x0,                                      /* pad0, pad1 */
-                               gsDPClearOtherMode(),                     /* rdpOthermode */
-                               { 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, /* segBases */
-                                 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0 },
-                               {
-                                   // viewport
-                                   SCREEN_WD * 2,
-                                   SCREEN_HT * 2,
-                                   G_MAXZ / 2,
-                                   0,
-                                   SCREEN_WD * 2,
-                                   SCREEN_HT * 2,
-                                   G_MAXZ / 2,
-                                   0,
-                               },
-                               &(dpGlobDPBlock[0]) };
-gtGlobState *ggsp2 = &(dpGlobObjState2);
-
 u64 dram_stack[SP_DRAM_STACK_SIZE64]; /* used for matrix stack */
 
 gtGfx *gTurboGfxPtr;
@@ -177,6 +157,7 @@ static void InitRsp(int clearScreen) {
     gptr = (Gfx *) &(ggsp->sp.rdpCmds[0]);
     gDPPipeSync(gptr++);
     if (clearScreen) {
+        // clear ZBuffer
         gDPSetDepthImage(gptr++, OS_K0_TO_PHYSICAL(zbuffer));
         gDPSetCycleType(gptr++, G_CYC_FILL);
         gDPSetColorImage(gptr++, G_IM_FMT_RGBA, G_IM_SIZ_16b, SCREEN_WD,
@@ -186,6 +167,7 @@ static void InitRsp(int clearScreen) {
         gDPFillRectangle(gptr++, 0, 0, SCREEN_WD-1, SCREEN_HT-1);
         gDPPipeSync(gptr++);
 
+        // clear FrameBuffer
         gDPSetScissor(gptr++, G_SC_NON_INTERLACE, 0, 0, SCREEN_WD, SCREEN_HT);
         gDPSetCombineMode(gptr++, G_CC_SHADE, G_CC_SHADE);
         gDPPipeSync(gptr++);
@@ -203,57 +185,6 @@ static void InitRsp(int clearScreen) {
     gDPNoOp(gptr++);
 }
 
-Vtx q0[5] __attribute__((aligned(16))) = {
-    { -40, 40, 0, 0, 0, 0, 0xFF, 0, 0, 0xff },
-    { 40, 40, 0, 0, (31 << 5), 0, 0, 0xff, 0, 0xff },
-    { 40, -40, 0, 0, (31 << 5), (31 << 5), 0, 0xff, 0, 0xff },
-    { -40, -40, 0, 0, 0, (31 << 5), 0xff, 0, 0, 0xff },
-    { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0xff },
-};
-
-gtTriN tris[] __attribute__((aligned(8))) = {
-    {
-        0,
-        1,
-        2,
-        0,
-    },
-    {
-        0,
-        2,
-        3,
-        0,
-    },
-    {
-        0,
-        1,
-        2,
-        0,
-    },
-    {
-        0,
-        2,
-        3,
-        0,
-    },
-};
-
-Gfx VertexColored[] = {
-    gsDPPipeSync(),
-    gsDPSetCombineMode(G_CC_SHADE, G_CC_SHADE),
-    gsDPEndDisplayList(),
-    gsDPEndDisplayList(),
-    gsDPEndDisplayList(),
-    gsDPEndDisplayList(),
-    gsDPEndDisplayList(),
-    gsDPEndDisplayList(),
-    gsDPEndDisplayList(),
-    gsDPEndDisplayList(),
-};
-
-
-
-
 
 extern gtTriN mario_tris[83 * 2];
 extern Vtx test_Cube_mesh_vtx_0[182];
@@ -269,11 +200,10 @@ extern gtGfx test64bf_Gfx;
 typedef float Mtx4[4][4];
 
 static void SetupViewing(void) {
-    float mf1[4][4];
     Mtx tmp;
     guPerspectiveF(dynamic.projectionF, &(ggsp->sp.perspNorm), 33, 320.0 / 240.0,
                 100, 2000, 1.0f);
-    guMtxF2L(mf1, &dynamic.projection);
+    guMtxF2L(dynamic.projectionF, &dynamic.projection);
 
     CameraUpdate(&dynamic.viewing, dynamic.viewingF);
 
@@ -284,9 +214,9 @@ static void SetupViewing(void) {
     guMtxCatL(&dynamic.viewing, &dynamic.projection, &dynamic.VP);
 
     Mtx4 M;
-    guMtxL2F(M, &test64_State.sp.transform);
-    guMtxCatF(M, vp, mvp);
-    guMtxF2L(mvp, &test64_State.sp.transform);
+    // guMtxL2F(M, &test64_State.sp.transform);
+    // guMtxCatF(M, vp, mvp);
+    // guMtxF2L(mvp, &test64_State.sp.transform);
 
     guMtxL2F(M, &test64bf_State.sp.transform);
     guMtxCatF(M, vp, mvp);
@@ -320,15 +250,15 @@ void gameloop(void *arg) {
         #define SCL 0.25f
         #define TRSL 150
         Mtx4 tmp;
-        gtStateSetOthermode(&(ggsp2->sp.rdpOthermode), GT_RENDERMODE, (G_RM_ZB_OPA_SURF | G_RM_ZB_OPA_SURF2));
-        gtStateSetOthermode(&(ggsp2->sp.rdpOthermode), GT_CYCLETYPE, G_CYC_1CYCLE);
-        guScaleF(Sc, SCL, SCL, SCL);
-        guRotateRPYF(Ro, 0, yaw++, 0);
-        guMtxCatF(Sc, Ro, ScRo);
+        // gtStateSetOthermode(&(ggsp2->sp.rdpOthermode), GT_RENDERMODE, (G_RM_ZB_OPA_SURF | G_RM_ZB_OPA_SURF2));
+        // gtStateSetOthermode(&(ggsp2->sp.rdpOthermode), GT_CYCLETYPE, G_CYC_1CYCLE);
+        // guScaleF(Sc, SCL, SCL, SCL);
+        // guRotateRPYF(Ro, 0, yaw++, 0);
+        // guMtxCatF(Sc, Ro, ScRo);
 
-        guTranslateF(Tr, 0, -40, -TRSL);
-        guMtxCatF(ScRo, Tr, tmp);
-        guMtxF2L(tmp, &test64_State.sp.transform);
+        // guTranslateF(Tr, 0, -40, -TRSL);
+        // guMtxCatF(ScRo, Tr, tmp);
+        // guMtxF2L(tmp, &test64_State.sp.transform);
 
         #define SCL2 1.0f
         guScaleF(Sc, SCL2, SCL2, SCL2);
@@ -348,10 +278,10 @@ void gameloop(void *arg) {
         gtStateSetOthermode(&(test64bf_State.sp.rdpOthermode), GT_RENDERMODE, (G_RM_ZB_OPA_SURF | G_RM_ZB_OPA_SURF2));
         gtStateSetOthermode(&(test64bf_State.sp.rdpOthermode), GT_CYCLETYPE, G_CYC_1CYCLE);
         
-        // Object_Draw(&test64_Obj);
         SetupViewing();
+        Object_Draw(&test64_Obj);
         // test64_Gfx.obj.gstatep = ggsp2;
-        gtDrawStatic(gTurboGfxPtr++, test64_Gfx);
+        // gtDrawStatic(gTurboGfxPtr++, test64_Gfx);
         gtDrawStatic(gTurboGfxPtr++, test64bf_Gfx);
 
         // start_mathutil_task();

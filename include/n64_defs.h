@@ -85,11 +85,8 @@ typedef struct Object2639 {
     Vector rotate;
     Vector scale;
 
-    // right now every material will have the same transform
-    u32 materialCount;
-    gtState *materialList;
-
-    // sentinel terminated lists are cringe
+    // modelList[0] has the only transform in this chain
+    //  also sentinel terminated lists are cringe
     u32 segmentCount;
     gtGfx *modelList;
 

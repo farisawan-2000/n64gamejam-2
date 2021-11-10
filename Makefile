@@ -36,7 +36,7 @@ SRC_DIRS += src src/buffers src/game asm src/math src/engine2639 \
 						models/test64bf
 
 C_FILES           := $(foreach dir,$(SRC_DIRS),$(wildcard $(dir)/*.c))
-ZIG_FILES           := $(foreach dir,$(SRC_DIRS),$(wildcard $(dir)/*.zig))
+# ZIG_FILES           := $(foreach dir,$(SRC_DIRS),$(wildcard $(dir)/*.zig))
 S_FILES           := $(foreach dir,$(SRC_DIRS),$(wildcard $(dir)/*.s))
 
 # Object files
@@ -65,7 +65,7 @@ INCLUDE_DIRS += /usr/include/n64 include $(BUILD_DIR) $(BUILD_DIR)/include src .
 C_DEFINES := $(foreach d,$(DEFINES),-D$(d))
 DEF_INC_CFLAGS := $(foreach i,$(INCLUDE_DIRS),-I$(i)) $(C_DEFINES)
 
-CFLAGS = -G 0 -O2 -g -mabi=32 -ffreestanding -mfix4300 $(DEF_INC_CFLAGS)
+CFLAGS = -G 0 -O2 -g -mabi=32 -ffreestanding -mfix4300 -fno-toplevel-reorder $(DEF_INC_CFLAGS)
 ASFLAGS     := -march=vr4300 -mabi=32 $(foreach i,$(INCLUDE_DIRS),-I$(i)) $(foreach d,$(DEFINES),--defsym $(d))
 
 # C preprocessor flags

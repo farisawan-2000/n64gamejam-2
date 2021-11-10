@@ -92,6 +92,8 @@ gtTriN test64bf_tris[] __attribute__((aligned(8))) = {
     {37, 41, 36, 0}, {45, 43, 44, 0},
 };
 
+
+
 gtState test64bf_State = {
     0x2202, // renderState 0
     0x0, // textureState 4

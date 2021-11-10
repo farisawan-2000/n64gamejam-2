@@ -13,7 +13,13 @@ void ControllerUpdate(void) {
 
 
     for (int i = 0; i < 4; i++) {
-        GameControllers[i].button = _controllers_internal[i].button;
+        // thanks kirby 64
+        GameControllers[i].button =
+            (_controllers_internal[i].button ^ GameControllers[i].held)
+            & _controllers_internal[i].button
+        ;
+        GameControllers[i].held = _controllers_internal[i].button;
+        
         GameControllers[i].stickX = _controllers_internal[i].stick_x;
         GameControllers[i].stickY = _controllers_internal[i].stick_y;
     }

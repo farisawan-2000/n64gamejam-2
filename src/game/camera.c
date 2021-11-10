@@ -3,8 +3,11 @@
 #include "controller.h"
 
 Vector sCameraLook = {160, 120, 400};
+Vector sCameraLook_Target = {0, 0, 0};
 Vector sCameraSpot = {0, 0, 0};
+Vector sCameraSpot_Target = {0, 0, 0};
 Vector sCameraRPY  = {0, 0, 0};
+Vector sCameraRPY_Target  = {0, 0, 0};
 
 
 enum CameraModes {
@@ -14,6 +17,12 @@ enum CameraModes {
 };
 
 u32 gCameraMode = CAMERA_PLAYER;
+
+void VectorApproach(Vector *dest, Vector *src, f32 multiplier) {
+    dest->x = dest->x + (src->x - dest->x) * multiplier;
+    dest->y = dest->y + (src->y - dest->y) * multiplier;
+    dest->z = dest->z + (src->z - dest->z) * multiplier;
+}
 
 void VectorCopy(Vector * restrict dest, Vector * restrict src) {
     *dest = *src;
@@ -27,9 +36,13 @@ void VectorExtend(Vector *dest, Vector *src, f32 dist, f32 pitch, f32 yaw) {
 
 
 void CameraApply(void) {
-    VectorExtend(&sCameraLook, &sCameraSpot, 500.0f, sCameraRPY.pitch * (M_PI / 180.0f),
+    VectorExtend(&sCameraLook_Target, &sCameraSpot, 500.0f, sCameraRPY.pitch * (M_PI / 180.0f),
         (M_PI / 180.0f) * sCameraRPY.yaw
     );
+
+    VectorApproach(&sCameraSpot, &sCameraSpot_Target, 0.2f);
+    VectorApproach(&sCameraLook, &sCameraLook_Target, 0.2f);
+    VectorApproach(&sCameraRPY, &sCameraRPY_Target, 0.2f);
 }
 
 void CameraPosApply(Vector *v, f32 dist, f32 yaw, f32 pitch) {
@@ -48,37 +61,37 @@ void CameraPosApply(Vector *v, f32 dist, f32 yaw, f32 pitch) {
 static void CameraUpdate_Player(void) {
     if (GameControllers[0].stickX != 0) {
         if (GameControllers[0].stickX > 0) {
-            CameraPosApply(&sCameraSpot, -MV_SPD, sCameraRPY.yaw + 90, sCameraRPY.pitch);
+            CameraPosApply(&sCameraSpot_Target, -MV_SPD, sCameraRPY.yaw + 90, sCameraRPY.pitch);
         } else {
-            CameraPosApply(&sCameraSpot, MV_SPD, sCameraRPY.yaw + 90, sCameraRPY.pitch);
+            CameraPosApply(&sCameraSpot_Target, MV_SPD, sCameraRPY.yaw + 90, sCameraRPY.pitch);
         }
     }
     if (GameControllers[0].stickY != 0) {
         if (GameControllers[0].stickY > 0) {
-            CameraPosApply(&sCameraSpot, MV_SPD, sCameraRPY.yaw, sCameraRPY.pitch);
+            CameraPosApply(&sCameraSpot_Target, MV_SPD, sCameraRPY.yaw, sCameraRPY.pitch);
         } else {
-            CameraPosApply(&sCameraSpot, -MV_SPD, sCameraRPY.yaw, sCameraRPY.pitch);
+            CameraPosApply(&sCameraSpot_Target, -MV_SPD, sCameraRPY.yaw, sCameraRPY.pitch);
         }
     }
 
     if (GameControllers[0].button & R_CBUTTONS) {
-        sCameraRPY.yaw -= 1;
+        sCameraRPY_Target.yaw -= 1;
     }
     if (GameControllers[0].button & L_CBUTTONS) {
-        sCameraRPY.yaw += 1;
+        sCameraRPY_Target.yaw += 1;
     }
     if (GameControllers[0].button & U_CBUTTONS) {
-        sCameraRPY.pitch -= 1;
+        sCameraRPY_Target.pitch -= 1;
     }
     if (GameControllers[0].button & D_CBUTTONS) {
-        sCameraRPY.pitch += 1;
+        sCameraRPY_Target.pitch += 1;
     }
 
     if (GameControllers[0].button & A_BUTTON) {
-        sCameraSpot.y += 2;
+        sCameraSpot_Target.y += 2;
     }
     if (GameControllers[0].button & B_BUTTON) {
-        sCameraSpot.y -= 2;
+        sCameraSpot_Target.y -= 2;
     }
 
     clampA(sCameraRPY.yaw);
@@ -88,8 +101,6 @@ static void CameraUpdate_Player(void) {
 
 
     CameraApply();
-
-
 }
 
 

@@ -11,6 +11,7 @@ countTris = 0
 countVtx = 0
 
 # renderstate is 0x2202
+# (GT_CULL_BACK | GT_SHADING_SMOOTH | GT_TEXTURE | GT_ZBUFFER)
 gtStateTemplate = """\
 gtState %s_State = {
     %s, // renderState 0
