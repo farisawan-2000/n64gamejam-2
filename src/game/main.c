@@ -277,7 +277,7 @@ void gameloop(void *arg) {
 
         InitRsp(1);
         MatAlloc_Init(ggsp);
-        
+
         gTurboGfxPtr = &(dynamic.turboGfxBuffer[0]);
         gp = &dynamic.glist;
 
@@ -344,10 +344,14 @@ void gameloop(void *arg) {
             *(vs8*)0=0;
         }
 
+        extern Gfx *sT3DMatGfxPtr;
         crash_screen_print(10,10, "%d (%.2f %.2f %.2f), (%.2f %.2f %.2f)",
             gTimer,
             sCameraSpot.x, sCameraSpot.y, sCameraSpot.z, 
             sCameraRPY.roll, sCameraRPY.pitch, sCameraRPY.yaw
+        );
+        crash_screen_print(10, 20, "0x%08X",
+            sT3DMatGfxPtr
         );
         osViSwapBuffer(system_cfb[gRenderedFramebuffer]);
         gRenderedFramebuffer ^= 1;

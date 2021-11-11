@@ -4,7 +4,7 @@
 #include "gtHelpers.h"
 
 void obj_rotate(Object2639 *this) {
-    this->rotate.pitch += 0.25f;
+    this->rotate.yaw += 1.0f;
 }
 
 void Object_MaterialApply(Object2639 *o) {
@@ -39,7 +39,9 @@ void Object_Draw(Object2639 *o) {
         o->init(o);
         o->init = NULL;
     }
-    if (o->loop != NULL) o->loop(o);
+    if (o->loop != NULL) {
+        o->loop(o);
+    }
 
     Object_MatrixApply(o);
 

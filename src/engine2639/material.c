@@ -10,7 +10,8 @@ static Gfx sT3DMatBuffer[8192];
 static Gfx *sT3DMatGfxPtr = &sT3DMatBuffer[0];
 
 void MatAlloc_Init(gtGlobState *g) {
-    g->sp.segBases[T3D_SEG_MATERIAL] = (u32)sT3DMatBuffer;
+    g->sp.segBases[T3D_SEG_MATERIAL] = (u32)&sT3DMatBuffer[0];
+    sT3DMatGfxPtr = &sT3DMatBuffer[0];
 }
 
 u32 MatAlloc_AllocTextureDL_RGBA16_64x32(u32 *texture) {
