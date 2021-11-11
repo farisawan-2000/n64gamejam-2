@@ -108,6 +108,7 @@ all: $(ROM)
 
 clean:
 	$(RM) -r $(BUILD_DIR)
+	make -C turbo3d clean
 
 test: $(ROM)
 	~/Downloads/mupen64plus/mupen64plus-gui $<

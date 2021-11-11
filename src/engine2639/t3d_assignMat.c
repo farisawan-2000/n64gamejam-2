@@ -1,6 +1,10 @@
+// The material allocator; use this for assigning both static and dynamic materials
+
 #include <ultra64.h>
 #include <PR/gt.h>
 
+// 64kb buffer so that we can segment
+// Gfx sT3DMatBuffer[8192];
 
 void t3d_assignMat(gtState *p, Gfx *mat) {
     p->sp.rdpCmds = mat;

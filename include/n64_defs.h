@@ -1,5 +1,6 @@
 #pragma once
 #include <PR/gt.h>
+#include "engine2639/material.h"
 
 #define	SCREEN_WD	320
 #define	SCREEN_HT	240
@@ -90,9 +91,35 @@ typedef struct Object2639 {
     u32 segmentCount;
     gtGfx *modelList;
 
+    enum Material matType;
+    // general purpose, might just be a texture pointer and params
+    union{
+        u32 matParamWord;
+        struct {
+            u8 fmt;
+            u8 siz;
+            u8 wd;
+            u8 ht;
+        } matParamTexProps;
+    };
+    void *matPtr;
+
     void (*init)(struct Object2639 *o);
     void (*loop)(struct Object2639 *o);
 } Object2639;
+
+#define ALIGN16(x) (((x) + 0xF) & -0x10)
+#define ALIGN8(x) (((x) + 7) & -8)
+#define ALIGN4(x) (((x) + 3) & -4)
+
+
+enum T3DSegments {
+    T3D_SEG_MATERIAL = 1,
+};
+
+#define ALIGN16(x) (((x) + 0xF) & -0x10)
+#define ALIGN8(x) (((x) + 7) & -8)
+#define ALIGN4(x) (((x) + 3) & -4)
 
 typedef float Mtx4[4][4];
 

@@ -3,6 +3,17 @@
 #include "n64_defs.h"
 #include "gtHelpers.h"
 
+void obj_rotate(Object2639 *this) {
+    this->rotate.pitch += 0.25f;
+}
+
+void Object_MaterialApply(Object2639 *o) {
+    switch (o->matType) {
+        case MATERIAL_TEXTURE:
+            o->modelList[0].obj.statep->sp.rdpCmds = MatAlloc_AllocTextureDL_RGBA16_64x32(o->matPtr);
+            break;
+    }
+}
 
 void Object_MatrixApply(Object2639 *o) {
     Mtx Tr, Ro, Scl, SRT;
@@ -10,7 +21,7 @@ void Object_MatrixApply(Object2639 *o) {
     extern gtState test64_State;
 
     guScale(&Scl, o->scale.x, o->scale.y, o->scale.z);
-    guRotateRPY(&Ro, o->rotate.roll, o->rotate.pitch, o->rotate.yaw++);
+    guRotateRPY(&Ro, o->rotate.roll, o->rotate.pitch, o->rotate.yaw);
     guTranslate(&Tr, o->move.x, o->move.y, o->move.z);
 
     guMtxCatL(&Scl, &Ro, &SRT);
@@ -23,9 +34,16 @@ void Object_MatrixApply(Object2639 *o) {
 
 
 void Object_Draw(Object2639 *o) {
+
+    if (o->init != NULL) {
+        o->init(o);
+        o->init = NULL;
+    }
+    if (o->loop != NULL) o->loop(o);
+
     Object_MatrixApply(o);
 
-    u32 statesPushed = 0;
+    Object_MaterialApply(o);
 
     for (int i = 0; i < o->segmentCount; i++) {
         gtDrawStatic(gTurboGfxPtr++, o->modelList[i]);

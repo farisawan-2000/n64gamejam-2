@@ -1,5 +1,5 @@
 OUTPUT_ARCH (mips)
-
+#define __LINKER__
 #include "n64_defs.h"
 
 #define BEGIN_SEG(name, addr) \

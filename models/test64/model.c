@@ -8,6 +8,9 @@ extern Vtx blok_Cube_mesh_vtx_0[57];
 extern gtTriN test64_tris[] __attribute__((aligned(8)));
 extern gtGfx test64_Gfx;
 extern gtState test64_State;
+extern u64 superTex[];
+
+extern void obj_rotate(Object2639*);
 
 Object2639 test64_Obj = {
     {0, -40, -150},
@@ -17,8 +20,12 @@ Object2639 test64_Obj = {
     1,
     &test64_Gfx,
 
+    MATERIAL_TEXTURE,
+    {G_IM_FMT_RGBA, G_IM_SIZ_16b, 64, 32},
+    superTex,
+
     NULL,
-    NULL,
+    obj_rotate,
 
 };
 
@@ -177,44 +184,6 @@ gtTriN test64_tris[] __attribute__((aligned(8))) = {
     {56, 37, 39, 0}, {56, 39, 42, 0},
     {49, 56, 42, 0}, {49, 42, 44, 0},
     {51, 56, 49, 0}, {51, 54, 56, 0},
-};
-
-
-
-Gfx VT2[] = {
-    // gsDPPipeSync(),
-      gsDPPipeSync(),
-    gsDPSetCombineLERP(TEXEL0, 0, SHADE, 0, 0, 0, 0, ENVIRONMENT, TEXEL0, 0, SHADE, 0, 0, 0, 0, ENVIRONMENT),
-    gsDPEndDisplayList(),
-    gsDPEndDisplayList(),
-    gsDPEndDisplayList(),
-    gsDPEndDisplayList(),
-    gsDPEndDisplayList(),
-    gsDPEndDisplayList(),
-    gsDPEndDisplayList(),
-    gsDPEndDisplayList(),
-    gsDPTileSync(),
-    gsDPSetTextureImage(G_IM_FMT_RGBA, G_IM_SIZ_16b_LOAD_BLOCK, 1, superTex),
-    gsDPSetTile(G_IM_FMT_RGBA, G_IM_SIZ_16b_LOAD_BLOCK, 0, 0, 7, 0, G_TX_WRAP | G_TX_NOMIRROR, 5, 0, G_TX_WRAP | G_TX_NOMIRROR, 6, 0),
-    gsDPLoadSync(),
-    gsDPLoadBlock(7, 0, 0, 2047, 128),
-    gsDPPipeSync(),
-    gsDPSetTile(G_IM_FMT_RGBA, G_IM_SIZ_16b, 16, 0, 0, 0, G_TX_WRAP | G_TX_NOMIRROR, 5, 0, G_TX_WRAP | G_TX_NOMIRROR, 6, 0),
-    gsDPSetTileSize(0, 0, 0, 252, 124),
-    gsDPEndDisplayList(),
-    gsDPEndDisplayList(),
-};
-static Gfx VertexColored[] = {
-    gsDPPipeSync(),
-    gsDPSetCombineMode(G_CC_SHADE, G_CC_SHADE),
-    gsDPEndDisplayList(),
-    gsDPEndDisplayList(),
-    gsDPEndDisplayList(),
-    gsDPEndDisplayList(),
-    gsDPEndDisplayList(),
-    gsDPEndDisplayList(),
-    gsDPEndDisplayList(),
-    gsDPEndDisplayList(),
 };
 
 

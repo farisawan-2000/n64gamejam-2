@@ -226,6 +226,40 @@ static void SetupViewing(void) {
 
 u32 gRCPTimer = 0;
 
+Gfx VertexColored[] = {
+    gsDPPipeSync(),
+    gsDPSetCombineMode(G_CC_SHADE, G_CC_SHADE),
+    gsDPEndDisplayList(),
+    gsDPEndDisplayList(),
+    gsDPEndDisplayList(),
+    gsDPEndDisplayList(),
+    gsDPEndDisplayList(),
+    gsDPEndDisplayList(),
+    gsDPEndDisplayList(),
+    gsDPEndDisplayList(),
+};
+extern u8 superTex;
+
+Gfx VT2[]  __attribute__((aligned(8)))= {
+    // gsDPPipeSync(),
+      gsDPPipeSync(),
+    gsDPSetCombineLERP(TEXEL0, 0, SHADE, 0, 0, 0, 0, ENVIRONMENT, TEXEL0, 0, SHADE, 0, 0, 0, 0, ENVIRONMENT),
+    gsDPTileSync(),
+    gsDPSetTextureImage(G_IM_FMT_RGBA, G_IM_SIZ_16b_LOAD_BLOCK, 1, &superTex),
+    gsDPSetTile(G_IM_FMT_RGBA, G_IM_SIZ_16b_LOAD_BLOCK, 0, 0, 7, 0, G_TX_WRAP | G_TX_NOMIRROR, 5, 0, G_TX_WRAP | G_TX_NOMIRROR, 6, 0),
+    gsDPLoadSync(),
+    gsDPLoadBlock(7, 0, 0, 2047, 128),
+    gsDPPipeSync(),
+    gsDPSetTile(G_IM_FMT_RGBA, G_IM_SIZ_16b, 16, 0, 0, 0, G_TX_WRAP | G_TX_NOMIRROR, 5, 0, G_TX_WRAP | G_TX_NOMIRROR, 6, 0),
+    gsDPSetTileSize(0, 0, 0, 252, 124),
+    gsDPEndDisplayList(),
+    gsDPEndDisplayList(),
+    gsDPEndDisplayList(),
+    gsDPEndDisplayList(),
+    gsDPEndDisplayList(),
+    gsDPEndDisplayList(),
+};
+
 
 void gameloop(void *arg) {
     Gfx *gp;
@@ -242,6 +276,8 @@ void gameloop(void *arg) {
 
 
         InitRsp(1);
+        MatAlloc_Init(ggsp);
+        
         gTurboGfxPtr = &(dynamic.turboGfxBuffer[0]);
         gp = &dynamic.glist;
 
@@ -259,6 +295,8 @@ void gameloop(void *arg) {
         // guTranslateF(Tr, 0, -40, -TRSL);
         // guMtxCatF(ScRo, Tr, tmp);
         // guMtxF2L(tmp, &test64_State.sp.transform);
+        // extern Gfx VT2[];
+        // test64_State.sp.rdpCmds = VT2;
 
         #define SCL2 1.0f
         guScaleF(Sc, SCL2, SCL2, SCL2);
@@ -279,10 +317,12 @@ void gameloop(void *arg) {
         gtStateSetOthermode(&(test64bf_State.sp.rdpOthermode), GT_CYCLETYPE, G_CYC_1CYCLE);
         
         SetupViewing();
+
         Object_Draw(&test64_Obj);
+        // GameTick();
+        gtDrawStatic(gTurboGfxPtr++, test64bf_Gfx);
         // test64_Gfx.obj.gstatep = ggsp2;
         // gtDrawStatic(gTurboGfxPtr++, test64_Gfx);
-        gtDrawStatic(gTurboGfxPtr++, test64bf_Gfx);
 
         // start_mathutil_task();
         // start_turbo3d_task();
@@ -293,18 +333,17 @@ void gameloop(void *arg) {
         osWritebackDCache(&dynamic, sizeof(dynamic));
         osSpTaskStart(&tlist);
 
-        while (1) {
-            if (osRecvMesg(&rspMessageQ, NULL, OS_MESG_NOBLOCK) == 0) {
-                gRCPTimer = 0;
-                break;
-            }
-            if (osRecvMesg(&rdpMessageQ, NULL, OS_MESG_NOBLOCK) == 0) {
-                gRCPTimer = 0;
-                break;
-            }
-            gRCPTimer++;
-            if (gRCPTimer > 5) *(vs8*)0=0;
+        OSTimer timer;
+        OSMesg *msg;
+        osSetTimer(&timer, OS_USEC_TO_CYCLES(3000000), 0, &rspMessageQ, (OSMesg)0xDEAD);
+
+        osRecvMesg(&rspMessageQ, &msg, OS_MESG_BLOCK);
+        osStopTimer(&timer);
+
+        if (msg == 0xDEAD) {
+            *(vs8*)0=0;
         }
+
         crash_screen_print(10,10, "%d (%.2f %.2f %.2f), (%.2f %.2f %.2f)",
             gTimer,
             sCameraSpot.x, sCameraSpot.y, sCameraSpot.z, 
