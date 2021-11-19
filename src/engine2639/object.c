@@ -8,6 +8,10 @@ void obj_rotate(Object2639 *this) {
 }
 
 void Object_MaterialApply(Object2639 *o) {
+
+    gtStateSetOthermode(&(o->modelList[0].obj.statep->sp.rdpOthermode), GT_RENDERMODE, (G_RM_ZB_OPA_SURF | G_RM_ZB_OPA_SURF2));
+    gtStateSetOthermode(&(o->modelList[0].obj.statep->sp.rdpOthermode), GT_CYCLETYPE, G_CYC_1CYCLE);
+
     switch (o->matType) {
         case MATERIAL_TEXTURE:
             o->modelList[0].obj.statep->sp.rdpCmds = MatAlloc_AllocTextureDL_RGBA16_64x32(o->matPtr);

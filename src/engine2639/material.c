@@ -19,12 +19,12 @@ u32 MatAlloc_AllocTextureDL_RGBA16_64x32(u32 *texture) {
 
     gDPPipeSync(sT3DMatGfxPtr++);
     gDPSetCombineLERP(sT3DMatGfxPtr++,
-        TEXEL0, 0, SHADE, 0, 0, 0, 0, ENVIRONMENT,
-        TEXEL0, 0, SHADE, 0, 0, 0, 0, ENVIRONMENT
+        0, 0, 0, TEXEL0, 0, 0, 0, ENVIRONMENT,
+        0, 0, 0, TEXEL0, 0, 0, 0, ENVIRONMENT
     );
     gDPTileSync(sT3DMatGfxPtr++);
-    gDPSetTextureImage(sT3DMatGfxPtr++, G_IM_FMT_RGBA, G_IM_SIZ_16b_LOAD_BLOCK, 1, texture);
-    gDPSetTile(sT3DMatGfxPtr++, G_IM_FMT_RGBA, G_IM_SIZ_16b_LOAD_BLOCK, 0, 0, 7, 0, G_TX_WRAP | G_TX_NOMIRROR, 5, 0, G_TX_WRAP | G_TX_NOMIRROR, 6, 0);
+    gDPSetTextureImage(sT3DMatGfxPtr++, G_IM_FMT_RGBA, G_IM_SIZ_16b, 1, texture);
+    gDPSetTile(sT3DMatGfxPtr++, G_IM_FMT_RGBA, G_IM_SIZ_16b, 0, 0, 7, 0, G_TX_WRAP | G_TX_NOMIRROR, 5, 0, G_TX_WRAP | G_TX_NOMIRROR, 6, 0);
     gDPLoadSync(sT3DMatGfxPtr++);
     gDPLoadBlock(sT3DMatGfxPtr++, 7, 0, 0, 2047, 128);
     gDPPipeSync(sT3DMatGfxPtr++);
@@ -37,4 +37,5 @@ u32 MatAlloc_AllocTextureDL_RGBA16_64x32(u32 *texture) {
 
     return ret;
 }
+
 

@@ -14,6 +14,7 @@ Vector sCameraSpot = {0, 0, 0};
 Vector sCameraSpot_Target = {0, 0, 0};
 Vector sCameraRPY  = {0, 0, 0};
 Vector sCameraRPY_Target  = {0, 0, 0};
+Vector sOrigin = {0,0,0};
 
 enum CameraModes {
     CAMERA_STATIC = 0,
@@ -29,6 +30,17 @@ void VectorSubtract (Vector *dest, Vector *v1, Vector *v2) {
     dest->x = v1->x - v2->x;
     dest->y = v1->y - v2->y;
     dest->z = v1->z - v2->z;
+}
+
+void VectorNormalize (Vector *dest, Vector *src) {
+    f32 vecMag = sqrtf((src->x * src->x) + (src->y * src->y) + (src->z * src->z));
+    if (vecMag == 0.0f) {
+        return 0.0f;
+    }
+    dest->x *= 1.0f / vecMag;
+    dest->y *= 1.0f / vecMag;
+    dest->z *= 1.0f / vecMag;
+    return vecMag;
 }
 
 void VectorApproach(Vector *dest, Vector *src, f32 multiplier) {
@@ -141,11 +153,15 @@ void CameraUpdate(Mtx *lookat, f32 mf[4][4]) {
         case CAMERA_OBJECTMOVE: break;
     }
 
+    // Scrapped feature: camera rotation/shake
+
+    // Vector upVec;
+    // VectorExtend(&upVec, &sOrigin, 1.0f, sCameraRPY.pitch, sCameraRPY.yaw);
 
     guLookAtF(mf,
         sCameraSpot.x, sCameraSpot.y, sCameraSpot.z,
         sCameraLook.x, sCameraLook.y, sCameraLook.z,
-        0, 1, 0
+        0,1,0
     );
     guMtxF2L(mf, lookat);
 }

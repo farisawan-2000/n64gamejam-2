@@ -310,6 +310,8 @@ void gameloop(void *arg) {
         // test64bf_State.sp.rdpCmds = rdpComdsEpic;
 
         extern Object2639 test64_Obj;
+        extern Object2639 circle_Obj;
+        extern Object2639 *circle_objp;
 
         gtStateSetOthermode(&(test64_State.sp.rdpOthermode), GT_RENDERMODE, (G_RM_ZB_OPA_SURF | G_RM_ZB_OPA_SURF2));
         gtStateSetOthermode(&(test64_State.sp.rdpOthermode), GT_CYCLETYPE, G_CYC_1CYCLE);
@@ -318,7 +320,8 @@ void gameloop(void *arg) {
         
         SetupViewing();
 
-        Object_Draw(&test64_Obj);
+        // Object_Draw(&test64_Obj);/
+        Object_Draw(circle_objp);
         // GameTick();
         gtDrawStatic(gTurboGfxPtr++, test64bf_Gfx);
         // test64_Gfx.obj.gstatep = ggsp2;
@@ -358,3 +361,4 @@ void gameloop(void *arg) {
         gTimer++;
     }
 }
+

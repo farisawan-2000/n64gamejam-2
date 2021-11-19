@@ -432,7 +432,7 @@ finished:
         if (thread == NULL) {
             osRecvMesg(&gCrashScreen.mesgQueue, &mesg, 1);
             thread = get_crashed_thread();
-            gCrashScreen.framebuffer = (u16 *) system_cfb[gRenderedFramebuffer];
+            gCrashScreen.framebuffer = (u16 *) system_cfb[gRenderedFramebuffer ^ 1];
             if (thread)
                 goto reset;
         } else {
