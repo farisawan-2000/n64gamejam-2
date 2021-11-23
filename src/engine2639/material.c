@@ -14,8 +14,13 @@ void MatAlloc_Init(gtGlobState *g) {
     sT3DMatGfxPtr = &sT3DMatBuffer[0];
 }
 
-u32 MatAlloc_AllocTextureDL_RGBA16_64x32(u32 *texture) {
+u32 MatAlloc_AllocTextureDL(u32 *texture, u32 params) {
     u32 ret = (T3D_SEG_MATERIAL << 24) + ((u32)sT3DMatGfxPtr - (u32)sT3DMatBuffer);
+
+    u8 fmt =    (params >> 24) & 0xFF;
+    u8 size =   (params >> 16) & 0xFF;
+    u8 width =  (params >>  8) & 0xFF;
+    u8 height = (params      ) & 0xFF;
 
     gDPPipeSync(sT3DMatGfxPtr++);
     gDPSetCombineLERP(sT3DMatGfxPtr++,
@@ -35,6 +40,34 @@ u32 MatAlloc_AllocTextureDL_RGBA16_64x32(u32 *texture) {
 
     sT3DMatGfxPtr = ALIGN16((u32)sT3DMatGfxPtr);
 
+    return ret;
+}
+
+u32 MatAlloc_AllocTextureDL_4b(u32 *texture, u32 params) {
+    u32 ret = (T3D_SEG_MATERIAL << 24) + ((u32)sT3DMatGfxPtr - (u32)sT3DMatBuffer);
+
+    u8 fmt =    (params >> 24) & 0xFF;
+    u8 palette =   (params >> 16) & 0xFF;
+    u8 width =  (params >>  8) & 0xFF;
+    u8 height = (params      ) & 0xFF;
+
+    gDPPipeSync(sT3DMatGfxPtr++);
+    gDPSetCombineLERP(sT3DMatGfxPtr++, 0, 0, 0, 1, 0, 0, 0, TEXEL0, 0, 0, 0, 1, 0, 0, 0, TEXEL0);
+
+    gDPLoadTextureBlock_4b(sT3DMatGfxPtr++,
+        texture,
+        fmt,
+        width, height,
+        palette,
+        G_TX_CLAMP | G_TX_NOMIRROR, G_TX_WRAP | G_TX_NOMIRROR,
+        G_TX_NOMASK, G_TX_NOMASK,
+        G_TX_NOLOD, G_TX_NOLOD
+    );
+    gDPEndDisplayList(sT3DMatGfxPtr++);
+    gDPEndDisplayList(sT3DMatGfxPtr++);
+
+
+    sT3DMatGfxPtr = ALIGN16((u32)sT3DMatGfxPtr);
     return ret;
 }
 

@@ -4,6 +4,8 @@
 #include "n64_defs.h"
 #include "gtHelpers.h"
 #include "camera.h"
+#include "crash_screen.h"
+#include "debug.h"
 
 extern Gfx clearCfb[];
 
@@ -172,7 +174,7 @@ static void InitRsp(int clearScreen) {
         gDPSetCombineMode(gptr++, G_CC_SHADE, G_CC_SHADE);
         gDPPipeSync(gptr++);
         gDPSetColorImage(gptr++, G_IM_FMT_RGBA, G_IM_SIZ_16b, SCREEN_WD,
-                         system_cfb[gRenderedFramebuffer ^ 1]);
+                         system_cfb[gRenderedFramebuffer]);
         gDPSetFillColor(gptr++,
                         (GPACK_RGBA5551(64, 64, 255, 1) << 16 | GPACK_RGBA5551(64, 64, 255, 1)));
         gDPFillRectangle(gptr++, 0, 0, SCREEN_WD, SCREEN_HT - 1);
@@ -260,7 +262,7 @@ Gfx VT2[]  __attribute__((aligned(8)))= {
     gsDPEndDisplayList(),
 };
 
-
+extern u32 gTrisRendered;
 void gameloop(void *arg) {
     Gfx *gp;
 
@@ -269,6 +271,7 @@ void gameloop(void *arg) {
     // InitRsp(1);
 
     while (1) {
+        gTrisRendered = 0;
         osRecvMesg(&retraceMessageQ, NULL, OS_MESG_BLOCK);
 
         ControllerUpdate();
@@ -312,6 +315,7 @@ void gameloop(void *arg) {
         extern Object2639 test64_Obj;
         extern Object2639 circle_Obj;
         extern Object2639 *circle_objp;
+        extern Object2639 *bookModel_objp;
 
         gtStateSetOthermode(&(test64_State.sp.rdpOthermode), GT_RENDERMODE, (G_RM_ZB_OPA_SURF | G_RM_ZB_OPA_SURF2));
         gtStateSetOthermode(&(test64_State.sp.rdpOthermode), GT_CYCLETYPE, G_CYC_1CYCLE);
@@ -322,8 +326,9 @@ void gameloop(void *arg) {
 
         // Object_Draw(&test64_Obj);/
         Object_Draw(circle_objp);
+        Object_Draw(bookModel_objp);
         // GameTick();
-        gtDrawStatic(gTurboGfxPtr++, test64bf_Gfx);
+        // gtDrawStatic(gTurboGfxPtr++, test64bf_Gfx);
         // test64_Gfx.obj.gstatep = ggsp2;
         // gtDrawStatic(gTurboGfxPtr++, test64_Gfx);
 
@@ -347,14 +352,10 @@ void gameloop(void *arg) {
             *(vs8*)0=0;
         }
 
-        extern Gfx *sT3DMatGfxPtr;
-        crash_screen_print(10,10, "%d (%.2f %.2f %.2f), (%.2f %.2f %.2f)",
-            gTimer,
+        crash_screen_print(10,10, "tris: %d (%.2f %.2f %.2f), (%.2f %.2f %.2f)",
+            gTrisRendered,
             sCameraSpot.x, sCameraSpot.y, sCameraSpot.z, 
             sCameraRPY.roll, sCameraRPY.pitch, sCameraRPY.yaw
-        );
-        crash_screen_print(10, 20, "0x%08X",
-            sT3DMatGfxPtr
         );
         osViSwapBuffer(system_cfb[gRenderedFramebuffer]);
         gRenderedFramebuffer ^= 1;

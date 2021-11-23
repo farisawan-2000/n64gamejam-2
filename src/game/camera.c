@@ -89,14 +89,14 @@ void CameraPosApply(Vector *v, f32 dist, f32 yaw, f32 pitch) {
 }
 
 static void CameraUpdate_Free(void) {
-    if (GameControllers[0].stickX != 0) {
+    if (abs(GameControllers[0].stickX) >= 14) {
         if (GameControllers[0].stickX > 0) {
             CameraPosApply(&sCameraSpot_Target, -MV_SPD, sCameraRPY.yaw + 90, sCameraRPY.pitch);
         } else {
             CameraPosApply(&sCameraSpot_Target, MV_SPD, sCameraRPY.yaw + 90, sCameraRPY.pitch);
         }
     }
-    if (GameControllers[0].stickY != 0) {
+    if (abs(GameControllers[0].stickY) >= 14) {
         if (GameControllers[0].stickY > 0) {
             CameraPosApply(&sCameraSpot_Target, MV_SPD, sCameraRPY.yaw, sCameraRPY.pitch);
         } else {

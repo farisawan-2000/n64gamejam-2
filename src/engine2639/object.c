@@ -3,6 +3,8 @@
 #include "n64_defs.h"
 #include "gtHelpers.h"
 
+u32 gTrisRendered = 0;
+
 void obj_rotate(Object2639 *this) {
     this->rotate.yaw += 1.0f;
 }
@@ -14,7 +16,10 @@ void Object_MaterialApply(Object2639 *o) {
 
     switch (o->matType) {
         case MATERIAL_TEXTURE:
-            o->modelList[0].obj.statep->sp.rdpCmds = MatAlloc_AllocTextureDL_RGBA16_64x32(o->matPtr);
+            o->modelList[0].obj.statep->sp.rdpCmds = MatAlloc_AllocTextureDL(o->matPtr, o->matParamWord);
+            break;
+        case MATERIAL_4B_TEXTURE:
+            o->modelList[0].obj.statep->sp.rdpCmds = MatAlloc_AllocTextureDL_4b(o->matPtr, o->matParamWord);
             break;
     }
 }
@@ -53,6 +58,9 @@ void Object_Draw(Object2639 *o) {
 
     for (int i = 0; i < o->segmentCount; i++) {
         gtDrawStatic(gTurboGfxPtr++, o->modelList[i]);
+
+        // if (o->modelList[i].obj.statep)
+        //     gTrisRendered += o->modelList[i].obj.statep->sp.triCount;
     }
 }
 

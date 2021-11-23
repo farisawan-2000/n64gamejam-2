@@ -1175,10 +1175,10 @@ gtState circle_State = {
     21, // triCount a
     0x0, // some_flag b
     NULL, // c
-    gsDPSetOtherMode(
-        G_AD_NOISE | G_CD_MAGICSQ | G_CK_NONE | G_TC_FILT | G_TF_BILERP | G_TL_TILE | G_TD_CLAMP | G_TP_PERSP | G_CYC_1CYCLE | G_PM_1PRIMITIVE,
-        G_AC_NONE | G_ZS_PIXEL
-    ), // 10
+	gsDPSetOtherMode(
+	    G_AD_NOISE | G_CD_MAGICSQ | G_CK_NONE | G_TC_FILT | G_TF_BILERP | G_TL_TILE | G_TD_CLAMP | G_TP_PERSP | G_CYC_1CYCLE | G_PM_1PRIMITIVE,
+	    G_AC_NONE | G_ZS_PIXEL
+	), // 10
     {
     // integer portion:
         0x00010000, 0x00000000,

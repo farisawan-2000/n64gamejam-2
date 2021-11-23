@@ -34,7 +34,8 @@ SRC_DIRS += src src/buffers src/game asm src/math src/engine2639 \
 						models/testMod \
 						models/test64 \
 						models/test64bf \
-						models/testCircle
+						models/testCircle \
+						models/book
 
 C_FILES           := $(foreach dir,$(SRC_DIRS),$(wildcard $(dir)/*.c))
 # ZIG_FILES           := $(foreach dir,$(SRC_DIRS),$(wildcard $(dir)/*.zig))

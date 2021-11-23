@@ -3,6 +3,7 @@
 
 enum Material {
     MATERIAL_TEXTURE = 0,
+    MATERIAL_4B_TEXTURE,
 
 };
 

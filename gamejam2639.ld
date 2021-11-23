@@ -66,6 +66,7 @@ SECTIONS
       MODEL(BUILD_DIR/models/test64/model.o);
       MODEL(BUILD_DIR/models/test64bf/model.o);
       MODEL(BUILD_DIR/models/testCircle/model.o);
+      MODEL(BUILD_DIR/models/book/model.o);
    }
    END_SEG(code)
    BEGIN_NOLOAD(code)

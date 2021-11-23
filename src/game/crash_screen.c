@@ -5,6 +5,7 @@ void *memcpy(void *dst, const void *src, size_t size);
 size_t strlen(const char *str);
 char *strchr(const char *str, s32 ch);
 #include "n64_defs.h"
+#include "crash_screen.h"
 
 // #include "printf.h"
 
@@ -136,15 +137,9 @@ extern u64 osClockRate;
 // extern far void map_data_init(void);
 // extern far char *find_function_in_stack(u32 *);
 
-struct {
-    OSThread thread;
-    u64 stack[0x800 / sizeof(u64)];
-    OSMesgQueue mesgQueue;
-    OSMesg mesg;
-    u16 *framebuffer;
-    u16 width;
-    u16 height;
-} gCrashScreen;
+
+
+CrashScreen gCrashScreen;
 
 void crash_screen_draw_rect(s32 x, s32 y, s32 w, s32 h) {
     s32 i, j;
