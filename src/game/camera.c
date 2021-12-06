@@ -1,5 +1,6 @@
 #include <ultra64.h>
 #include "n64_defs.h"
+#include "camera.h"
 #include "controller.h"
 
 #define MV_SPD 6.0f
@@ -15,14 +16,6 @@ Vector sCameraSpot_Target = {0, 0, 0};
 Vector sCameraRPY  = {0, 0, 0};
 Vector sCameraRPY_Target  = {0, 0, 0};
 Vector sOrigin = {0,0,0};
-
-enum CameraModes {
-    CAMERA_STATIC = 0,
-    CAMERA_FREEMOVE,
-    CAMERA_PLAYER,
-    CAMERA_CUTSCENE,
-    CAMERA_OBJECTMOVE,
-};
 
 u32 gCameraMode = CAMERA_FREEMOVE;
 

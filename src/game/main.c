@@ -214,53 +214,7 @@ static void SetupViewing(void) {
 
     guMtxCatF(dynamic.viewingF, dynamic.projectionF, vp);
     guMtxCatL(&dynamic.viewing, &dynamic.projection, &dynamic.VP);
-
-    Mtx4 M;
-    // guMtxL2F(M, &test64_State.sp.transform);
-    // guMtxCatF(M, vp, mvp);
-    // guMtxF2L(mvp, &test64_State.sp.transform);
-
-    guMtxL2F(M, &test64bf_State.sp.transform);
-    guMtxCatF(M, vp, mvp);
-    guMtxF2L(mvp, &test64bf_State.sp.transform);
-    
 }
-
-u32 gRCPTimer = 0;
-
-Gfx VertexColored[] = {
-    gsDPPipeSync(),
-    gsDPSetCombineMode(G_CC_SHADE, G_CC_SHADE),
-    gsDPEndDisplayList(),
-    gsDPEndDisplayList(),
-    gsDPEndDisplayList(),
-    gsDPEndDisplayList(),
-    gsDPEndDisplayList(),
-    gsDPEndDisplayList(),
-    gsDPEndDisplayList(),
-    gsDPEndDisplayList(),
-};
-extern u8 superTex;
-
-Gfx VT2[]  __attribute__((aligned(8)))= {
-    // gsDPPipeSync(),
-      gsDPPipeSync(),
-    gsDPSetCombineLERP(TEXEL0, 0, SHADE, 0, 0, 0, 0, ENVIRONMENT, TEXEL0, 0, SHADE, 0, 0, 0, 0, ENVIRONMENT),
-    gsDPTileSync(),
-    gsDPSetTextureImage(G_IM_FMT_RGBA, G_IM_SIZ_16b_LOAD_BLOCK, 1, &superTex),
-    gsDPSetTile(G_IM_FMT_RGBA, G_IM_SIZ_16b_LOAD_BLOCK, 0, 0, 7, 0, G_TX_WRAP | G_TX_NOMIRROR, 5, 0, G_TX_WRAP | G_TX_NOMIRROR, 6, 0),
-    gsDPLoadSync(),
-    gsDPLoadBlock(7, 0, 0, 2047, 128),
-    gsDPPipeSync(),
-    gsDPSetTile(G_IM_FMT_RGBA, G_IM_SIZ_16b, 16, 0, 0, 0, G_TX_WRAP | G_TX_NOMIRROR, 5, 0, G_TX_WRAP | G_TX_NOMIRROR, 6, 0),
-    gsDPSetTileSize(0, 0, 0, 252, 124),
-    gsDPEndDisplayList(),
-    gsDPEndDisplayList(),
-    gsDPEndDisplayList(),
-    gsDPEndDisplayList(),
-    gsDPEndDisplayList(),
-    gsDPEndDisplayList(),
-};
 
 extern u32 gTrisRendered;
 void gameloop(void *arg) {
@@ -286,54 +240,11 @@ void gameloop(void *arg) {
 
         gtDraw(gTurboGfxPtr++, ggsp, &dpInitClearObj, NULL, NULL);
 
-        #define SCL 0.25f
-        #define TRSL 150
-        Mtx4 tmp;
-        // gtStateSetOthermode(&(ggsp2->sp.rdpOthermode), GT_RENDERMODE, (G_RM_ZB_OPA_SURF | G_RM_ZB_OPA_SURF2));
-        // gtStateSetOthermode(&(ggsp2->sp.rdpOthermode), GT_CYCLETYPE, G_CYC_1CYCLE);
-        // guScaleF(Sc, SCL, SCL, SCL);
-        // guRotateRPYF(Ro, 0, yaw++, 0);
-        // guMtxCatF(Sc, Ro, ScRo);
-
-        // guTranslateF(Tr, 0, -40, -TRSL);
-        // guMtxCatF(ScRo, Tr, tmp);
-        // guMtxF2L(tmp, &test64_State.sp.transform);
-        // extern Gfx VT2[];
-        // test64_State.sp.rdpCmds = VT2;
-
-        #define SCL2 1.0f
-        guScaleF(Sc, SCL2, SCL2, SCL2);
-        guRotateRPYF(Ro, 0, yaw, 0);
-        guMtxCatF(Sc, Ro, ScRo);
-        guTranslateF(Tr, 0, 0, TRSL);
-        guMtxCatF(ScRo, Tr, tmp);
-        guMtxF2L(tmp, &test64bf_State.sp.transform);
-
-        // test64_State.sp.rdpCmds = rdpComdsEpic;
-        // test64bf_State.sp.rdpCmds = rdpComdsEpic;
-
-        extern Object2639 test64_Obj;
-        extern Object2639 circle_Obj;
-        extern Object2639 *circle_objp;
-        extern Object2639 *bookModel_objp;
-
-        gtStateSetOthermode(&(test64_State.sp.rdpOthermode), GT_RENDERMODE, (G_RM_ZB_OPA_SURF | G_RM_ZB_OPA_SURF2));
-        gtStateSetOthermode(&(test64_State.sp.rdpOthermode), GT_CYCLETYPE, G_CYC_1CYCLE);
-        gtStateSetOthermode(&(test64bf_State.sp.rdpOthermode), GT_RENDERMODE, (G_RM_ZB_OPA_SURF | G_RM_ZB_OPA_SURF2));
-        gtStateSetOthermode(&(test64bf_State.sp.rdpOthermode), GT_CYCLETYPE, G_CYC_1CYCLE);
-        
         SetupViewing();
 
-        // Object_Draw(&test64_Obj);/
-        Object_Draw(circle_objp);
-        Object_Draw(bookModel_objp);
-        // GameTick();
-        // gtDrawStatic(gTurboGfxPtr++, test64bf_Gfx);
-        // test64_Gfx.obj.gstatep = ggsp2;
-        // gtDrawStatic(gTurboGfxPtr++, test64_Gfx);
+        // draw levels anobjects here
+        GameTick();
 
-        // start_mathutil_task();
-        // start_turbo3d_task();
         gtDraw(gTurboGfxPtr++, NULL, &dpFinalObj, NULL, NULL);
         gtFinish(gTurboGfxPtr++);
         tlist.t.data_size = (u32)((gTurboGfxPtr - dynamic.turboGfxBuffer) * sizeof(gtGfx));

@@ -2,40 +2,40 @@
 #include <PR/gt.h>
 #include "engine2639/material.h"
 
-#define	SCREEN_WD	320
-#define	SCREEN_HT	240
+#define SCREEN_WD   320
+#define SCREEN_HT   240
 #define SCREEN_WIDTH SCREEN_WD
 #define SCREEN_HEIGHT SCREEN_HT
 
 #define RDPFIFO_SIZE    (8*1024/sizeof(u64))
 #define GLIST_LEN       2048
 
-#define SP_BOOT_UCODE_SIZE      0x00d0  /*  rspboot size */
+#define SP_BOOT_UCODE_SIZE 0x00d0
 
-#define	NUM_PI_MSGS	8		/* PI Message Queue      */
-#define	STACKSIZE	0x2000		/* Thread stack size */
+#define NUM_PI_MSGS 8
+#define STACKSIZE 0x2000
 
-#define	STATIC_SEGMENT	1
+#define STATIC_SEGMENT  1
 #define CFB_SEGMENT     2
 #define CFB_ADDRESS     0x80300000
-#define RSPBUF_ADDRESS  0x803a0000      /* If no define, then after cfb */
+#define RSPBUF_ADDRESS  0x803a0000
 
 #ifdef _LANGUAGE_C
-extern	OSMesgQueue	piMessageQ;
-extern	OSMesgQueue	siMessageQ;
-extern	OSMesgQueue	dmaMessageQ;
-extern	OSIoMesg	dmaIOMessageBuf;
-extern	OSMesgQueue	rspMessageQ;
-extern	OSMesgQueue	rdpMessageQ;
-extern	OSMesgQueue	retraceMessageQ;
-extern	OSContStatus	contStatus[MAXCONTROLLERS];
-extern	OSContPad	_controllers_internal[MAXCONTROLLERS];
-extern	u8		contExist;
+extern  OSMesgQueue piMessageQ;
+extern  OSMesgQueue siMessageQ;
+extern  OSMesgQueue dmaMessageQ;
+extern  OSIoMesg dmaIOMessageBuf;
+extern  OSMesgQueue rspMessageQ;
+extern  OSMesgQueue rdpMessageQ;
+extern  OSMesgQueue retraceMessageQ;
+extern  OSContStatus contStatus[MAXCONTROLLERS];
+extern  OSContPad _controllers_internal[MAXCONTROLLERS];
+extern  u8 contExist;
 
-extern	u16		system_cfb[2][SCREEN_WD*SCREEN_HT];
-extern  u16   zbuffer[SCREEN_WD*SCREEN_HT];
-extern  u64             system_rdpfifo[];
-extern  u64             system_rspyield[];
+extern  u16 system_cfb[2][SCREEN_WD*SCREEN_HT];
+extern  u16 zbuffer[SCREEN_WD*SCREEN_HT];
+extern  u64 system_rdpfifo[];
+extern  u64 system_rspyield[];
 
 #define A_COUNT(a) (sizeof((a)) / sizeof((a[0])))
 
@@ -49,7 +49,7 @@ typedef struct {
     float viewingF[4][4];
     float identityF[4][4];
 
-    gtState objState[512];
+    // gtState objState[512];
 
 
     gtGfx turboGfxBuffer[512];
@@ -72,14 +72,6 @@ typedef struct {
     f32 yaw;
   };
 } Vector;
-
-typedef struct {
-  u16 button;
-  u16 held;
-  s8 stickX;
-  s8 stickY;
-  f32 angle;
-} Controller2639;
 
 typedef struct Object2639 {
     Vector move;
@@ -115,11 +107,15 @@ typedef struct Object2639 {
 
 enum T3DSegments {
     T3D_SEG_MATERIAL = 1,
+    T3D_SEG_LEVEL,
+
 };
 
 #define ALIGN16(x) (((x) + 0xF) & -0x10)
 #define ALIGN8(x) (((x) + 7) & -8)
 #define ALIGN4(x) (((x) + 3) & -4)
+
+#define ALIGNED16 __attribute__((aligned(16)))
 
 typedef float Mtx4[4][4];
 
@@ -128,10 +124,10 @@ extern gtGfx *gTurboGfxPtr;
 /*
  *  Print macro for DEBUG
  */
-#ifdef	DEBUG
-#  define	osSyncPrintf	osSyncPrintf
+#ifdef  DEBUG
+#  define   osSyncPrintf    osSyncPrintf
 #else
-#  define	osSyncPrintf	if (0) osSyncPrintf
+#  define   osSyncPrintf    if (0) osSyncPrintf
 #endif
 
-#endif	/* _LANGUAGE_C */
+#endif  /* _LANGUAGE_C */

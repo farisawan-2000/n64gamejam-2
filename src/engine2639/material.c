@@ -6,7 +6,7 @@
 
 #define static
 // 64kb buffer so that we can segment
-static Gfx sT3DMatBuffer[8192];
+static Gfx sT3DMatBuffer[8192] ALIGNED16;
 static Gfx *sT3DMatGfxPtr = &sT3DMatBuffer[0];
 
 void MatAlloc_Init(gtGlobState *g) {

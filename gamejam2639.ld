@@ -47,8 +47,8 @@ SECTIONS
       BUILD_DIR/turbo3d_text.o(.data);
 
       /* data */
+      MODEL(BUILD_DIR/models/clearCFB/model.o);
       BUILD_DIR/src*.o(.data*);
-
       */libultra_rom.a:*.o(.data*);
 
       /usr/lib/n64/PR/gspF3DEX2.fifo.o(.data*);
@@ -60,18 +60,12 @@ SECTIONS
 
       */libultra_rom.a:*.o(.*rodata*);
       */libgcc.a:*.o(.*rodata*);
-
-      /* temp model space */
-      MODEL(BUILD_DIR/models/clearCFB/clearCFB.o);
-      MODEL(BUILD_DIR/models/test64/model.o);
-      MODEL(BUILD_DIR/models/test64bf/model.o);
-      MODEL(BUILD_DIR/models/testCircle/model.o);
-      MODEL(BUILD_DIR/models/book/model.o);
    }
    END_SEG(code)
    BEGIN_NOLOAD(code)
    {
-      BUILD_DIR/src*.o(.*bss*);
+      BUILD_DIR/src/game*.o(.*bss*);
+      BUILD_DIR/src/engine2639*.o(.*bss*);
 
       */libultra_rom.a:*.o(COMMON);
       */libultra_rom.a:*.o(.scommon);
@@ -94,8 +88,20 @@ SECTIONS
    BEGIN_NOLOAD(system_rspbuf)
    {
       BUILD_DIR/src/buffers/system_rspbuf.o(.bss*);
+      end_bss = .;
    }
    END_NOLOAD(system_rspbuf)
+
+
+   /*MODEL SPACE*/
+
+   /*LEVEL_TITLE*/
+   BEGIN_SEG(Title, 0x02000000) {
+      MODEL(BUILD_DIR/models/JamTitle/model.o);
+   }
+
+
+
 
    /* Discard everything not specifically mentioned above. */
    /DISCARD/ :

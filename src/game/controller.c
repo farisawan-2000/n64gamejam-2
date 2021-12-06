@@ -1,5 +1,6 @@
 #include <ultra64.h>
 #include "n64_defs.h"
+#include "controller.h"
 
 
 Controller2639 GameControllers[4];

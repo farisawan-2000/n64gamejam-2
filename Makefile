@@ -29,15 +29,10 @@ BOOT		:= /usr/lib/n64/PR/bootcode/boot.6102
 BOOT_OBJ	:= $(BUILD_DIR)/boot.6102.o
 
 # Directories containing source files
-SRC_DIRS += src src/buffers src/game asm src/math src/engine2639 \
-						models/clearCFB \
-						models/testMod \
-						models/test64 \
-						models/test64bf \
-						models/testCircle \
-						models/book
+SRC_DIRS += src src/buffers src/game asm src/math src/engine2639
 
-C_FILES           := $(foreach dir,$(SRC_DIRS),$(wildcard $(dir)/*.c))
+C_FILES           := $(foreach dir,$(SRC_DIRS),$(wildcard $(dir)/*.c)) \
+										 $(wildcard models/*/*.c)
 # ZIG_FILES           := $(foreach dir,$(SRC_DIRS),$(wildcard $(dir)/*.zig))
 S_FILES           := $(foreach dir,$(SRC_DIRS),$(wildcard $(dir)/*.s))
 
@@ -121,7 +116,7 @@ test-pj64: $(ROM)
 load: $(ROM)
 	cp $< /media/faris/CF62-9261/
 
-ALL_DIRS := $(BUILD_DIR) $(addprefix $(BUILD_DIR)/,$(SRC_DIRS))
+ALL_DIRS := $(BUILD_DIR) $(addprefix $(BUILD_DIR)/,$(SRC_DIRS) $(wildcard models/*/))
 
 # Make sure build directory exists before compiling anything
 DUMMY != mkdir -p $(ALL_DIRS)

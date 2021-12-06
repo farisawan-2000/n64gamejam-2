@@ -59,8 +59,8 @@ void Object_Draw(Object2639 *o) {
     for (int i = 0; i < o->segmentCount; i++) {
         gtDrawStatic(gTurboGfxPtr++, o->modelList[i]);
 
-        // if (o->modelList[i].obj.statep)
-        //     gTrisRendered += o->modelList[i].obj.statep->sp.triCount;
+        if (o->modelList[i].obj.statep)
+            gTrisRendered += o->modelList[i].obj.statep->sp.triCount;
     }
 }
 
