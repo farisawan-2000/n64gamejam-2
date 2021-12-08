@@ -117,6 +117,7 @@ with open(sys.argv[1]) as f:
                          .split()
 
             if tokens[0] == "gsSPVertex":
+                # print("// DBG VTX %d" % countTris)
                 vtxName = ''.join(tokens[1:4])
                 # if triLoadCount >= 0:
                 stateList.append([
@@ -126,7 +127,12 @@ with open(sys.argv[1]) as f:
                 if len(stateList) == 2:
                     stateList[0][1] = countTris
                 if countTris != 0:
-                    stateList[-1][1] = countTris
+                    # if stateList[-1][1] != 0:
+                        # print("//IDIOT")
+                    print("// %d" % countTris)
+                    stateList[-2][1] = countTris
+                # if len(stateList) > 1:
+                #     stateList[-1][1] = countTris
                 countTris = 0
 
                 if triLoadCount >= 0:
@@ -146,10 +152,11 @@ with open(sys.argv[1]) as f:
                     int(tokens[4]) + vtxOffset
                 ))
             if tokens[0] == "gsSP2Triangles":
+                countTris += 2
+                # print("// 2tri %d" % countTris)
                 if needMoreTris:
                     print("gtTriN %s_tris_%d[] __attribute__((aligned(8))) = {" % (sys.argv[2], triLoadCount))
                     needMoreTris = False
-                countTris += 2
                 print("    {%d, %d, %d, 0}, {%d, %d, %d, 0}," % (
                     int(tokens[1]) + vtxOffset,
                     int(tokens[2]) + vtxOffset,
@@ -218,7 +225,12 @@ print(gtGfxEnd)
 
 print(object2639_Template % (
     sys.argv[2],
-    len(listOfVtxLoads) + 1,
+    len(listOfVtxLoads),
     "%s_GfxList" % sys.argv[2]
 ))
 
+
+
+    # {300, 0, 1000},
+    # {90, 180, 0},
+    # {1.0, 1.0, 1.0},
