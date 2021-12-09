@@ -319,8 +319,8 @@ void InGame_CursorLoop(Object2639 *o) {
         }
 
         if (GameControllers[0].held & Z_TRIG) {
-            o->move.x += 100.0f * (M_DTOR * cosf(o->rotate.yaw + 90));
-            o->move.y -= 100.0f * (M_DTOR * sinf(o->rotate.yaw + 90));
+            o->move.x += 2.0f * (cosf(M_DTOR * (o->rotate.yaw + 90)));
+            o->move.y += 2.0f * (sinf(M_DTOR * (o->rotate.yaw + 90)));
         }
         gYaw = o->rotate.yaw;
     }
