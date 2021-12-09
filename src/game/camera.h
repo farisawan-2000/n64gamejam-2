@@ -21,3 +21,4 @@ extern u32 gCameraMode;
 
 void VectorCopy(Vector * restrict dest, Vector * restrict src);
 void VectorFullApproach(Vector *dest, f32 *src, f32 multiplier);
+void FloatApproach(f32 *dest, f32 *src, f32 multiplier);

@@ -264,9 +264,10 @@ void gameloop(void *arg) {
 
         extern u32 gTurn;
         extern u32 elapsedSamples;
-        crash_screen_print(10,10, "tris: %d (Turn: %d) (samples %d)",
+        extern u32 EXPOSED_State;
+        crash_screen_print(10,10, "tris: %d (state: %d) (samples %d)",
             gTrisRendered,
-            gTurn,
+            EXPOSED_State,
             elapsedSamples
         );
         osViSwapBuffer(system_cfb[gRenderedFramebuffer]);

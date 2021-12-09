@@ -1,6 +1,7 @@
 #include <ultra64.h>
 #include "n64_defs.h"
 #include "game/controller.h"
+#include "game/camera.h"
 
 #define SECOND_COUNT 10
 
@@ -42,6 +43,7 @@ void InGame_LeverLoop(Object2639 *o) {
     FloatApproach(&o->rotate.roll, &B2AngleTarget, 0.2f);
 }
 
+
 enum Turn {
     TURN_P1 = 0,
     TURN_P2
@@ -60,11 +62,16 @@ enum InGameStates {
 static u32 sGameState = IG_STATE_RESET;
 static u32 sGameNextState = IG_STATE_RESET;
 static u32 sStateTimer = 0;
+#define SAMPLES_PER_SEX 4
 
+s16 DN_BufferX[2][SECOND_COUNT * SAMPLES_PER_SEX];
+s16 DN_BufferY[2][SECOND_COUNT * SAMPLES_PER_SEX];
 
 u32 ReloadTitle = 0;
 u32 elapsedSamples = 0;
+u32 EXPOSED_State = 0;
 static void NextStateProc(void) {
+    EXPOSED_State = sGameState;
     switch (sGameState) {
         case IG_STATE_RESET:
             gTurn = TURN_P1;
@@ -72,17 +79,22 @@ static void NextStateProc(void) {
             sGameNextState = IG_STATE_P1_DRAW;
             break;
         case IG_STATE_P1_DRAW:
-            if (sStateTimer > (60 * SECOND_COUNT)) {
+            // *(vs8*)0=0;
+            if (sStateTimer >= (60 * SECOND_COUNT) - 50) {
                 sGameNextState = IG_STATE_P1_P2_TRANSITION;
             }
             break;
         case IG_STATE_P1_P2_TRANSITION:
+            // bzero(DN_BufferX, sizeof DN_BufferX);
+            // bzero(DN_BufferY, sizeof DN_BufferY);
             gTurn = TURN_P2;
             elapsedSamples = 0;
-            sGameNextState = IG_STATE_P2_DRAW;
+            if (sStateTimer > 300) {
+                sGameNextState = IG_STATE_P2_DRAW;
+            }
             break;
         case IG_STATE_P2_DRAW:
-            if (sStateTimer > (60 * SECOND_COUNT * 2)) {
+            if (sStateTimer > (60 * SECOND_COUNT) - 50) {
                 sGameNextState = IG_STATE_RESULTS;
             }
             break;
@@ -97,6 +109,7 @@ static void NextStateProc(void) {
             break;
     }
 }
+
 
 void InGame_Loop(Object2639 *o) {
     if (sGameNextState != sGameState) {
@@ -170,16 +183,13 @@ void InGame_CanvasLoop(Object2639 *o) {
 }
 
 
-#define SAMPLES_PER_SEX 4
 
-u16 DN_BufferX[SECOND_COUNT * SAMPLES_PER_SEX];
-u16 DN_BufferY[SECOND_COUNT * SAMPLES_PER_SEX];
 
 #include <PR/gt.h>
 
-gtState PaintStateArray[SECOND_COUNT * SAMPLES_PER_SEX];
-Object2639 PaintObjectArray[SECOND_COUNT * SAMPLES_PER_SEX];
-gtGfx PaintGFXArray[SECOND_COUNT * SAMPLES_PER_SEX];
+gtState PaintStateArray[SECOND_COUNT * SAMPLES_PER_SEX * 2];
+Object2639 PaintObjectArray[SECOND_COUNT * SAMPLES_PER_SEX * 2];
+gtGfx PaintGFXArray[SECOND_COUNT * SAMPLES_PER_SEX * 2];
 extern Object2639 Paint_Obj;
 
 extern gtState Paint_State;
@@ -189,10 +199,14 @@ void SetElapsed(void) {
     elapsedSamples = sStateTimer / (60 / SAMPLES_PER_SEX);
 }
 
+u32 gScore = 0;
 void SamplePaintSplotch(Object2639 *o) {
-    if (gTurn == TURN_P1) {
-        DN_BufferX[elapsedSamples] = o->move.x;
-        DN_BufferY[elapsedSamples] = o->move.y;
+    // if (gTurn == TURN_P1) {
+        DN_BufferX[gTurn][elapsedSamples] = o->move.x;
+        DN_BufferY[gTurn][elapsedSamples] = o->move.y;
+    // }
+    if (gTurn == TURN_P2) {
+        // SCORE HERE
     }
 
     PaintStateArray[elapsedSamples] = Paint_State;
@@ -213,8 +227,8 @@ void SamplePaintSplotch(Object2639 *o) {
 void Draw_PaintSplotch(void) {
     u32 *drawptr = 0;
     for (int i = 0; i < elapsedSamples; i++) {
-        PaintObjectArray[i].move.x = DN_BufferX[elapsedSamples];
-        PaintObjectArray[i].move.y = DN_BufferY[elapsedSamples];
+        // PaintObjectArray[i].move.x = DN_BufferX[elapsedSamples];
+        // PaintObjectArray[i].move.y = DN_BufferY[elapsedSamples];
         Object_Draw(&PaintObjectArray[i]);
     }
 }
@@ -261,14 +275,14 @@ void InGame_CursorLoop(Object2639 *o) {
     }
 
     SetElapsed();
-    if (prevS != elapsedSamples) {
+    // if (prevS != elapsedSamples) {
         SamplePaintSplotch(o);
         Draw_PaintSplotch();
         prevS = elapsedSamples;
-    }
+    // }
 
     if (gTurn == TURN_P1) {
-        o->rotate.pitch = 0;
+        o->rotate.yaw = 0;
         if (abs(GameControllers[0].stickX) > 14) {
             if (GameControllers[0].stickX > 0)
                 o->move.x -= CURSPD;
@@ -284,15 +298,15 @@ void InGame_CursorLoop(Object2639 *o) {
         }
     } else {
         if (GameControllers[0].held & R_CBUTTONS) {
-            o->rotate.pitch += CURSPD;
+            o->rotate.yaw += CURSPD;
         }
         if (GameControllers[0].held & L_CBUTTONS) {
-            o->rotate.pitch -= CURSPD;
+            o->rotate.yaw -= CURSPD;
         }
 
         if (GameControllers[0].held & Z_TRIG) {
-            o->move.x += CURSPD * (cosf(o->rotate.pitch));
-            o->move.y += CURSPD * (sinf(o->rotate.pitch));
+            o->move.x += CURSPD * (M_DTOR * cosf(o->rotate.yaw));
+            o->move.y += CURSPD * (M_DTOR * sinf(o->rotate.yaw));
         }
     }
 
