@@ -70,8 +70,10 @@ s16 DN_BufferY[2][SECOND_COUNT * SAMPLES_PER_SEX];
 u32 ReloadTitle = 0;
 u32 elapsedSamples = 0;
 u32 EXPOSED_State = 0;
+u32 EXPOSED_Timer = 0;
 static void NextStateProc(void) {
     EXPOSED_State = sGameState;
+    EXPOSED_Timer = sStateTimer;
     switch (sGameState) {
         case IG_STATE_RESET:
             gTurn = TURN_P1;
@@ -104,6 +106,7 @@ static void NextStateProc(void) {
                 sGameNextState = IG_STATE_RESET;
             }
             if (GameControllers[0].button & B_BUTTON) {
+                sGameNextState = IG_STATE_RESET;
                 ReloadTitle = 1;
             }
             break;
@@ -138,12 +141,12 @@ void InGame_SignP1Loop(Object2639 *o) {
     FloatApproach(&o->move.x, &P1PosT, 0.2f);
 }
 
-f32 P2PosT = RIGHT_SIGN;
+f32 P2PosT = LEFT_SIGN;
 void InGame_SignP2_1Loop(Object2639 *o) {
-    if (gTurn) {
-        P2PosT = RIGHT_SIGN - DELTA;
+    if (gTurn==0) {
+        P2PosT = LEFT_SIGN + DELTA;
     } else {
-        P2PosT = RIGHT_SIGN;
+        P2PosT = LEFT_SIGN;
     }
 
     FloatApproach(&o->move.x, &P2PosT, 0.2f);
@@ -206,7 +209,17 @@ void SamplePaintSplotch(Object2639 *o) {
         DN_BufferY[gTurn][elapsedSamples] = o->move.y;
     // }
     if (gTurn == TURN_P2) {
-        // SCORE HERE
+        u32 r = 0;
+        for (int i = 0; i < elapsedSamples; i++) {
+            if ((abs(DN_BufferX[0][i] - DN_BufferX[1][i]) < 50)
+                && (abs(DN_BufferY[0][i] - DN_BufferY[1][i]) < 50)
+                ) {
+                    r += 5;
+                }
+
+
+        }
+        gScore = r;
     }
 
     PaintStateArray[elapsedSamples] = Paint_State;
@@ -246,6 +259,7 @@ f32 YD = 225;
 //     }
 
 static u32 prevS = 0;
+f32 gYaw = 0;
 void InGame_CursorLoop(Object2639 *o) {
 
     if (sGameState == IG_STATE_RESULTS) {
@@ -305,9 +319,10 @@ void InGame_CursorLoop(Object2639 *o) {
         }
 
         if (GameControllers[0].held & Z_TRIG) {
-            o->move.x += CURSPD * (M_DTOR * cosf(o->rotate.yaw));
-            o->move.y += CURSPD * (M_DTOR * sinf(o->rotate.yaw));
+            o->move.x += 100.0f * (M_DTOR * cosf(o->rotate.yaw + 90));
+            o->move.y -= 100.0f * (M_DTOR * sinf(o->rotate.yaw + 90));
         }
+        gYaw = o->rotate.yaw;
     }
 
     // if (gTurn == )

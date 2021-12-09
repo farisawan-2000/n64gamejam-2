@@ -263,13 +263,31 @@ void gameloop(void *arg) {
         }
 
         extern u32 gTurn;
+        extern f32 gYaw;
         extern u32 elapsedSamples;
         extern u32 EXPOSED_State;
-        crash_screen_print(10,10, "tris: %d (state: %d) (samples %d)",
-            gTrisRendered,
-            EXPOSED_State,
-            elapsedSamples
-        );
+        extern u32 EXPOSED_Timer;
+        extern u32 gScore;
+
+        switch (EXPOSED_State) {
+            case 1:
+                crash_screen_print(40,10, "Player1 Turn"); break;
+            case 2:
+                crash_screen_print(40,10, "Pass in %d", 5 - (EXPOSED_Timer/60)); break;
+            case 3:
+                crash_screen_print(40,10, "Player2 Turn Score: %d", gScore); break;
+
+            case 4:
+                crash_screen_print(40,10, "Player2 Score: %d", gScore);
+                crash_screen_print(40,20, "Press Start to try again", gScore);
+                crash_screen_print(40,30, "Press B to goto menu.", gScore);
+
+                crash_screen_print(40,50, "Game by someone2639", gScore);
+
+                break;
+        }
+        
+            
         osViSwapBuffer(system_cfb[gRenderedFramebuffer]);
         gRenderedFramebuffer ^= 1;
         gTimer++;

@@ -697,7 +697,8 @@ Object2639 SignP1_Obj = {
 
     MATERIAL_TEXTURE,
     PARAM_PACK(G_IM_FMT_RGBA, G_IM_SIZ_16b, 64, 32),
-    sign_P1Instructions_rgba16,
+    // sign_P1Instructions_rgba16,
+    canvas_P2Instructions2_rgba16,
 
     NULL,
     InGame_SignP1Loop,
