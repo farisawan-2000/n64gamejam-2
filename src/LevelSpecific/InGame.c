@@ -209,15 +209,23 @@ void SamplePaintSplotch(Object2639 *o) {
         DN_BufferY[gTurn][elapsedSamples] = o->move.y;
     // }
     if (gTurn == TURN_P2) {
-        u32 r = 0;
-        for (int i = 0; i < elapsedSamples; i++) {
-            if ((abs(DN_BufferX[0][i] - DN_BufferX[1][i]) < 50)
-                && (abs(DN_BufferY[0][i] - DN_BufferY[1][i]) < 50)
-                ) {
-                    r += 5;
-                }
+        // u32 r = 0;
+        // for (int i = 0; i < elapsedSamples; i++) {
+        //     if ((abs(DN_BufferX[0][i] - DN_BufferX[1][i]) < 50)
+        //         && (abs(DN_BufferY[0][i] - DN_BufferY[1][i]) < 50)
+        //         ) {
+        //             r += 5;
+        //         }
+        // }
+        // gScore = r;
+
+        if (abs(DN_BufferX[gTurn][elapsedSamples] - DN_BufferX[gTurn^1][elapsedSamples]) < (50 + (DELTA/2))) {
+            if (abs(DN_BufferY[gTurn][elapsedSamples] - DN_BufferY[gTurn^1][elapsedSamples]) < (50 + (DELTA/2))) {
+                gScore += 5;
+            }
         }
-        gScore = r;
+    } else {
+        gScore = 0;
     }
 
     PaintStateArray[elapsedSamples] = Paint_State;
@@ -262,6 +270,11 @@ void InGame_CursorLoop(Object2639 *o) {
         return; // cant move if game over
     }
 
+    if (sGameState == IG_STATE_P1_P2_TRANSITION) {
+        o->move.x = -DELTA;
+        o->move.y = 0;
+    }
+
     if (o->move.x < XR) {
         o->move.x = XR;
     }
@@ -285,11 +298,11 @@ void InGame_CursorLoop(Object2639 *o) {
     }
 
     SetElapsed();
-    // if (prevS != elapsedSamples) {
+    if (sGameState != IG_STATE_P1_P2_TRANSITION) {
         SamplePaintSplotch(o);
         Draw_PaintSplotch();
         prevS = elapsedSamples;
-    // }
+    }
 
     if (gTurn == TURN_P1) {
         o->rotate.yaw = 0;
@@ -308,10 +321,10 @@ void InGame_CursorLoop(Object2639 *o) {
         }
     } else {
         if (GameControllers[0].held & R_CBUTTONS) {
-            o->rotate.yaw += CURSPD;
+            o->rotate.yaw += CURSPD*2;
         }
         if (GameControllers[0].held & L_CBUTTONS) {
-            o->rotate.yaw -= CURSPD;
+            o->rotate.yaw -= CURSPD*2;
         }
 
         if (GameControllers[0].held & Z_TRIG) {
