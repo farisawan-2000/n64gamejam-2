@@ -216,8 +216,6 @@ void SamplePaintSplotch(Object2639 *o) {
                 ) {
                     r += 5;
                 }
-
-
         }
         gScore = r;
     }
@@ -226,14 +224,12 @@ void SamplePaintSplotch(Object2639 *o) {
 
     bzero(&PaintGFXArray[elapsedSamples], sizeof(Object2639));
     PaintGFXArray[elapsedSamples] = Paint_GfxList;
-    PaintGFXArray->obj.statep = &PaintStateArray[elapsedSamples];
+    PaintGFXArray[elapsedSamples].obj.statep = &PaintStateArray[elapsedSamples];
 
     bzero(&PaintObjectArray[elapsedSamples], sizeof(Object2639));
     PaintObjectArray[elapsedSamples] = Paint_Obj;
     PaintObjectArray[elapsedSamples].move.x = o->move.x;
     PaintObjectArray[elapsedSamples].move.y = o->move.y;
-    PaintObjectArray[elapsedSamples].init = 0;
-    PaintObjectArray[elapsedSamples].loop = 0;
     PaintObjectArray[elapsedSamples].modelList = &PaintGFXArray[elapsedSamples];
 }
 
