@@ -5,15 +5,14 @@ void *memcpy(void *dst, const void *src, size_t size);
 size_t strlen(const char *str);
 char *strchr(const char *str, s32 ch);
 #include "n64_defs.h"
+#include "controller.h"
+#include "farcall.h"
 #include "crash_screen.h"
 
 // #include "printf.h"
 
 enum crashPages {
     PAGE_CONTEXT,
-#if PUPPYPRINT_DEBUG
-    PAGE_LOG,
-#endif
     PAGE_STACKTRACE,
     PAGE_DISASM,
     PAGE_COUNT
@@ -132,10 +131,12 @@ char *gFpcsrDesc[6] = {
     "Inexact operation",
 };
 
+
+
 extern u64 osClockRate;
-// extern far char *parse_map(u32);
-// extern far void map_data_init(void);
-// extern far char *find_function_in_stack(u32 *);
+extern far char *parse_map(u32);
+extern far void map_data_init(void);
+extern far char *find_function_in_stack(u32 *);
 
 
 
@@ -285,61 +286,61 @@ void draw_crash_context(OSThread *thread, s32 cause) {
 
 // prints any function pointers it finds in the stack format:
 // SP address: function name
-// void draw_stacktrace(OSThread *thread, UNUSED s32 cause) {
-//     __OSThreadContext *tc = &thread->context;
-//     u32 temp_sp = (tc->sp + 0x14);
+void draw_stacktrace(OSThread *thread, s32 cause) {
+    __OSThreadContext *tc = &thread->context;
+    u32 temp_sp = (tc->sp + 0x14);
 
-//     crash_screen_draw_rect(25, 20, 270, 210);
-//     crash_screen_print(30, 25, "STACK TRACE FROM %08X:", temp_sp);
-//     if ((u32) parse_map == 0x80345678) {
-//         crash_screen_print(30, 35, "CURRFUNC: NONE");
-//     } else {
-//         crash_screen_print(30, 35, "CURRFUNC: %s", parse_map(tc->pc));
-//     }
+    crash_screen_draw_rect(25, 20, 270, 210);
+    crash_screen_print(30, 25, "STACK TRACE FROM %08X:", temp_sp);
+    if ((u32) parse_map == 0x80345678) {
+        crash_screen_print(30, 35, "CURRFUNC: NONE");
+    } else {
+        crash_screen_print(30, 35, "CURRFUNC: %s", parse_map(tc->pc));
+    }
 
-//     osWritebackDCacheAll();
+    osWritebackDCacheAll();
 
-//     for (int i = 0; i < 18; i++) {
-//         if ((u32) find_function_in_stack == 0x80345678) {
-//             crash_screen_print(30, (45 + (i * 10)), "STACK TRACE DISABLED");
-//             break;
-//         } else {
-//             if ((u32) find_function_in_stack == 0x80345678) {
-//                 return;
-//             }
+    for (int i = 0; i < 18; i++) {
+        if ((u32) find_function_in_stack == 0x80345678) {
+            crash_screen_print(30, (45 + (i * 10)), "STACK TRACE DISABLED");
+            break;
+        } else {
+            if ((u32) find_function_in_stack == 0x80345678) {
+                return;
+            }
 
-//             char *fname = find_function_in_stack(&temp_sp);
-//             if ((fname == NULL) || ((*(u32*)temp_sp & 0x80000000) == 0)) {
-//                 crash_screen_print(30, (45 + (i * 10)), "%08X: UNKNOWN", temp_sp);
-//             } else {
-//                 crash_screen_print(30, (45 + (i * 10)), "%08X: %s", temp_sp, fname);
-//             }
-//         }
-//     }
-// }
+            char *fname = find_function_in_stack(&temp_sp);
+            if ((fname == NULL) || ((*(u32*)temp_sp & 0x80000000) == 0)) {
+                crash_screen_print(30, (45 + (i * 10)), "%08X: UNKNOWN", temp_sp);
+            } else {
+                crash_screen_print(30, (45 + (i * 10)), "%08X: %s", temp_sp, fname);
+            }
+        }
+    }
+}
 
-// extern char *insn_disasm(u32 insn, u32 isPC);
-// static u32 sProgramPosition = 0;
-// void draw_disasm(OSThread *thread) {
-//     __OSThreadContext *tc = &thread->context;
-//     // u32 insn = *(u32*)tc->pc;
+extern char *insn_disasm(u32 insn, u32 isPC);
+static u32 sProgramPosition = 0;
+void draw_disasm(OSThread *thread) {
+    __OSThreadContext *tc = &thread->context;
+    // u32 insn = *(u32*)tc->pc;
 
-//     crash_screen_draw_rect(25, 20, 270, 210);
-//     if (sProgramPosition == 0) {
-//         sProgramPosition = (tc->pc - 36);
-//     }
-//     crash_screen_print(30, 25, "DISASM %08X", sProgramPosition);
-//     osWritebackDCacheAll();
+    crash_screen_draw_rect(25, 20, 270, 210);
+    if (sProgramPosition == 0) {
+        sProgramPosition = (tc->pc - 36);
+    }
+    crash_screen_print(30, 25, "DISASM %08X", sProgramPosition);
+    osWritebackDCacheAll();
 
-//     for (int i = 0; i < 19; i++) {
-//         u32 addr = sProgramPosition + (i * 4);
-//         u32 toDisasm = *(u32*)(addr);
+    for (int i = 0; i < 19; i++) {
+        u32 addr = sProgramPosition + (i * 4);
+        u32 toDisasm = *(u32*)(addr);
 
-//         crash_screen_print(30, 35 + (i * 10), "%s", insn_disasm(toDisasm, addr == tc->pc));
-//     }
+        crash_screen_print(30, 35 + (i * 10), "%s", insn_disasm(toDisasm, addr == tc->pc));
+    }
 
-//     osWritebackDCacheAll();
-// }
+    osWritebackDCacheAll();
+}
 
 void draw_crash_screen(OSThread *thread) {
     s32 cause;
@@ -353,22 +354,22 @@ void draw_crash_screen(OSThread *thread) {
         cause = 17;
     }
 
-    // if (gPlayer1Controller->buttonPressed & R_TRIG) {
-    //     crashPage++;
-    //     updateBuffer = TRUE;
-    // }
-    // if (gPlayer1Controller->buttonPressed & L_TRIG || gPlayer1Controller->buttonPressed & Z_TRIG) {
-    //     crashPage--;
-    //     updateBuffer = TRUE;
-    // }
-    // if (gPlayer1Controller->buttonDown & D_CBUTTONS) {
-    //     sProgramPosition += 4;
-    //     updateBuffer = TRUE;
-    // }
-    // if (gPlayer1Controller->buttonDown & U_CBUTTONS) {
-    //     sProgramPosition -= 4;
-    //     updateBuffer = TRUE;
-    // }
+    if (GameControllers[0].button & R_TRIG) {
+        crashPage++;
+        updateBuffer = TRUE;
+    }
+    if (GameControllers[0].button & L_TRIG || GameControllers[0].button & Z_TRIG) {
+        crashPage--;
+        updateBuffer = TRUE;
+    }
+    if (GameControllers[0].held & D_CBUTTONS) {
+        sProgramPosition += 4;
+        updateBuffer = TRUE;
+    }
+    if (GameControllers[0].held & U_CBUTTONS) {
+        sProgramPosition -= 4;
+        updateBuffer = TRUE;
+    }
 
     if (crashPage >= PAGE_COUNT && crashPage != 255)
         crashPage = 0;
@@ -431,10 +432,11 @@ finished:
             if (thread)
                 goto reset;
         } else {
-            // if (gControllerBits) {
-            //     osContStartReadData(&gSIEventMesgQueue);
+            // extern u32 gTimer;
+            // if (gTimer > 1) {
+            //     osContStartReadData(&siMessageQ);
             // }
-            // read_controller_inputs(2);
+            ControllerUpdate();
             draw_crash_screen(thread);
         }
     }

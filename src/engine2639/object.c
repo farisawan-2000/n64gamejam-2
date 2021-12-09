@@ -9,34 +9,41 @@ void obj_rotate(Object2639 *this) {
     this->rotate.yaw += 1.0f;
 }
 
-void Object_MaterialApply(Object2639 *o) {
+void Object_MaterialApply(volatile Object2639 *o) {
 
     gtStateSetOthermode(&(o->modelList[0].obj.statep->sp.rdpOthermode), GT_RENDERMODE, (G_RM_ZB_OPA_SURF | G_RM_ZB_OPA_SURF2));
     gtStateSetOthermode(&(o->modelList[0].obj.statep->sp.rdpOthermode), GT_CYCLETYPE, G_CYC_1CYCLE);
 
     switch (o->matType) {
+        case MATERIAL_NONE:
+            o->modelList[0].obj.statep->sp.rdpCmds = MatAlloc_AllocNoDL(o->matPtr, o->matParamWord);
+            break;
         case MATERIAL_TEXTURE:
             o->modelList[0].obj.statep->sp.rdpCmds = MatAlloc_AllocTextureDL(o->matPtr, o->matParamWord);
             break;
-        case MATERIAL_4B_TEXTURE:
-            o->modelList[0].obj.statep->sp.rdpCmds = MatAlloc_AllocTextureDL_4b(o->matPtr, o->matParamWord);
-            break;
+        // case MATERIAL_4B_TEXTURE:
+        //     o->modelList[0].obj.statep->sp.rdpCmds = MatAlloc_AllocTextureDL_4b(o->matPtr, o->matParamWord);
+        //     break;
+        default:
+            *(vs8*)0=0;
     }
 }
 
 void Object_MatrixApply(Object2639 *o) {
-    Mtx Tr, Ro, Scl, SRT;
+    Mtx4 Tr, Ro, Scl, SRT;
 
     extern gtState test64_State;
 
-    guScale(&Scl, o->scale.x, o->scale.y, o->scale.z);
-    guRotateRPY(&Ro, o->rotate.roll, o->rotate.pitch, o->rotate.yaw);
-    guTranslate(&Tr, o->move.x, o->move.y, o->move.z);
+    guScaleF(&Scl, o->scale.x, o->scale.y, o->scale.z);
+    guRotateRPYF(&Ro, o->rotate.roll, o->rotate.pitch, o->rotate.yaw);
+    guTranslateF(&Tr, o->move.x, o->move.y, o->move.z);
 
-    guMtxCatL(&Scl, &Ro, &SRT);
-    guMtxCatL(&SRT, &Tr, &SRT);
+    guMtxCatF(&Scl, &Ro, &SRT);
+    guMtxCatF(&SRT, &Tr, &SRT);
 
-    guMtxCatL(&SRT, &dynamic.VP, &o->modelList[0].obj.statep->sp.transform);
+    Mtx Final;
+    guMtxF2L(&SRT, &Final);
+    guMtxCatL(&Final, &dynamic.VP, &o->modelList[0].obj.statep->sp.transform);
     // guMtxCatL(&SRT, &dynamic.VP, &test64_State.sp.transform);
 
 }

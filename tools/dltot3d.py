@@ -65,7 +65,7 @@ Object2639 %s_Obj = {
     &%s, // gfxlist name
 
     MATERIAL_TEXTURE,
-    {G_IM_FMT_RGBA, G_IM_SIZ_16b, 64, 32},
+    PARAM_PACK(G_IM_FMT_RGBA, G_IM_SIZ_16b, 64, 32),
     NULL,
 
     NULL,
@@ -103,6 +103,7 @@ with open(sys.argv[1]) as f:
             inVerts = True
             countVtx = int(line.split("[")[1].split("]")[0])
             vtxName = line.split()[1].split("[")[0]
+            print("static")
 
         if inVerts:
             print(line[:-1])

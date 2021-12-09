@@ -33,8 +33,14 @@ SECTIONS
    }
    END_SEG(boot)
    
+
    BEGIN_SEG(code, 0x80000400) SUBALIGN(16)
    {
+#ifndef CRASH_SCREEN_DBG
+parse_map = 0x80345678;
+find_function_in_stack = 0x80345678;
+draw_disasm = 0x80345678;
+#endif
       BUILD_DIR/asm/entry.o(.start);
       KEEP(BUILD_DIR/src*.o(.text));
 
@@ -66,6 +72,7 @@ SECTIONS
    {
       BUILD_DIR/src/game*.o(.*bss*);
       BUILD_DIR/src/engine2639*.o(.*bss*);
+      BUILD_DIR/src/LevelSpecific*.o(.*bss*);
 
       */libultra_rom.a:*.o(COMMON);
       */libultra_rom.a:*.o(.scommon);
@@ -96,9 +103,43 @@ SECTIONS
    /*MODEL SPACE*/
 
    /*LEVEL_TITLE*/
-   BEGIN_SEG(Title, 0x02000000) {
+   BEGIN_SEG(Title, 0x80100000) {
+      MODEL(BUILD_DIR/levels/title/level.o);
+
       MODEL(BUILD_DIR/models/JamTitle/model.o);
+      MODEL(BUILD_DIR/models/button1/model.o);
+      MODEL(BUILD_DIR/models/button2/model.o);
+      . = ALIGN(16);
    }
+   END_SEG(Title)
+
+   /* in game */
+   BEGIN_SEG(InGame, 0x80100000) {
+      MODEL(BUILD_DIR/levels/ingame/level.o);
+
+      MODEL(BUILD_DIR/models/ControlCenter/model.o);
+      MODEL(BUILD_DIR/models/CButtonRight/model.o);
+      MODEL(BUILD_DIR/models/CButtonLeft/model.o);
+      MODEL(BUILD_DIR/models/lever/model.o);
+
+      MODEL(BUILD_DIR/models/signP1/model.o);
+      MODEL(BUILD_DIR/models/signP2_1/model.o);
+      MODEL(BUILD_DIR/models/signP2_2/model.o);
+      MODEL(BUILD_DIR/models/signPAss/model.o);
+
+      MODEL(BUILD_DIR/models/canvas/model.o);
+
+      MODEL(BUILD_DIR/models/cursor/model.o);
+      MODEL(BUILD_DIR/models/paint/model.o);
+      . = ALIGN(16);
+   }
+   END_SEG(InGame)
+
+   BEGIN_SEG(TEXTURE, 0x03000000) {
+      BUILD_DIR/src/game/textures.o(TEXTURE);
+      . = ALIGN(16);
+   }
+   END_SEG(TEXTURE)
 
 
 
@@ -109,3 +150,4 @@ SECTIONS
       *(*);
    }
 }
+

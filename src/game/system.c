@@ -30,6 +30,8 @@ OSContStatus contStatus[MAXCONTROLLERS];
 OSContPad _controllers_internal[MAXCONTROLLERS];
 u8 contExist;
 
+OSPiHandle *carthandle;
+
 void thread3_mainFunc(void *arg) {
     osCreateMesgQueue(&dmaMessageQ, &dmaMessageBuf, 1);
     osCreateMesgQueue(&rspMessageQ, &rspMessageBuf, 1);
@@ -43,6 +45,8 @@ void thread3_mainFunc(void *arg) {
     osViSetEvent(&retraceMessageQ, NULL, 1);
 
     osContInit(&siMessageQ, &contExist, contStatus);
+
+    carthandle = osCartRomInit();
 
     gameloop(arg);
 }

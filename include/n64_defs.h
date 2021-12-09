@@ -2,6 +2,7 @@
 #include <PR/gt.h>
 #include "engine2639/material.h"
 
+
 #define SCREEN_WD   320
 #define SCREEN_HT   240
 #define SCREEN_WIDTH SCREEN_WD
@@ -17,8 +18,8 @@
 
 #define STATIC_SEGMENT  1
 #define CFB_SEGMENT     2
-#define CFB_ADDRESS     0x80300000
-#define RSPBUF_ADDRESS  0x803a0000
+#define CFB_ADDRESS     0x80200000
+#define RSPBUF_ADDRESS  0x802a0000
 
 #ifdef _LANGUAGE_C
 extern  OSMesgQueue piMessageQ;
@@ -49,12 +50,7 @@ typedef struct {
     float viewingF[4][4];
     float identityF[4][4];
 
-    // gtState objState[512];
-
-
     gtGfx turboGfxBuffer[512];
-
-    Gfx glist[GLIST_LEN];
 } GameGFXState;
 extern GameGFXState dynamic;
 
@@ -87,36 +83,39 @@ typedef struct Object2639 {
     // general purpose, might just be a texture pointer and params
     union{
         u32 matParamWord;
-        struct {
-            u8 fmt;
-            u8 siz;
-            u8 wd;
-            u8 ht;
-        } matParamTexProps;
+        // struct {
+        //     u8 fmt;
+        //     u8 siz;
+        //     u8 wd;
+        //     u8 ht;
+        // } matParamTexProps;
     };
-    void *matPtr;
+    volatile void *matPtr;
 
     void (*init)(struct Object2639 *o);
     void (*loop)(struct Object2639 *o);
 } Object2639;
+#define PARAM_PACK(fm, sz, w, h) \
+    (fm << 24) | \
+    (sz << 16) | \
+    (w << 8) | \
+    (h)
 
-#define ALIGN16(x) (((x) + 0xF) & -0x10)
-#define ALIGN8(x) (((x) + 7) & -8)
-#define ALIGN4(x) (((x) + 3) & -4)
+#define ALIGN64(x) (((x) + 0x40) & ~0x3F)
+#define ALIGN16(x) (((x) + 0x10) & ~0xF)
+#define ALIGN8(x) (((x) + 0x8) & ~7)
+#define ALIGN4(x) (((x) + 0x4) & ~3)
 
 
 enum T3DSegments {
     T3D_SEG_MATERIAL = 1,
     T3D_SEG_LEVEL,
-
+    T3D_SEG_TEXTURE,
 };
 
-#define ALIGN16(x) (((x) + 0xF) & -0x10)
-#define ALIGN8(x) (((x) + 7) & -8)
-#define ALIGN4(x) (((x) + 3) & -4)
-
 #define ALIGNED16 __attribute__((aligned(16)))
-
+#define TEX __attribute__ ((section ("TEXTURE")))
+#include "game/textures.h"
 typedef float Mtx4[4][4];
 
 extern gtGfx *gTurboGfxPtr;
@@ -129,5 +128,11 @@ extern gtGfx *gTurboGfxPtr;
 #else
 #  define   osSyncPrintf    if (0) osSyncPrintf
 #endif
+
+#define EXTERN_OBJ(o) extern Object2639 o ## _Obj;
+#define OBJ(o) o ## _Obj
+
+#define OFUN(x) extern void (x)(Object2639 *);
+
 
 #endif  /* _LANGUAGE_C */

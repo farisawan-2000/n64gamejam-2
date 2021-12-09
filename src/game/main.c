@@ -218,8 +218,6 @@ static void SetupViewing(void) {
 
 extern u32 gTrisRendered;
 void gameloop(void *arg) {
-    Gfx *gp;
-
     Mtx4 Sc, Ro, ScRo, Tr;
 
     // InitRsp(1);
@@ -227,6 +225,8 @@ void gameloop(void *arg) {
     while (1) {
         gTrisRendered = 0;
         osRecvMesg(&retraceMessageQ, NULL, OS_MESG_BLOCK);
+
+        bzero(&dynamic.turboGfxBuffer, sizeof(gtGfx) * 512);
 
         ControllerUpdate();
 
@@ -236,7 +236,6 @@ void gameloop(void *arg) {
         MatAlloc_Init(ggsp);
 
         gTurboGfxPtr = &(dynamic.turboGfxBuffer[0]);
-        gp = &dynamic.glist;
 
         gtDraw(gTurboGfxPtr++, ggsp, &dpInitClearObj, NULL, NULL);
 
@@ -263,10 +262,12 @@ void gameloop(void *arg) {
             *(vs8*)0=0;
         }
 
-        crash_screen_print(10,10, "tris: %d (%.2f %.2f %.2f), (%.2f %.2f %.2f)",
+        extern u32 gTurn;
+        extern u32 elapsedSamples;
+        crash_screen_print(10,10, "tris: %d (Turn: %d) (samples %d)",
             gTrisRendered,
-            sCameraSpot.x, sCameraSpot.y, sCameraSpot.z, 
-            sCameraRPY.roll, sCameraRPY.pitch, sCameraRPY.yaw
+            gTurn,
+            elapsedSamples
         );
         osViSwapBuffer(system_cfb[gRenderedFramebuffer]);
         gRenderedFramebuffer ^= 1;

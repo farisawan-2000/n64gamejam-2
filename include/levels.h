@@ -1,13 +1,11 @@
-#include <ultra64.h>
 #pragma once
+#include "n64_defs.h"
+#include "game/camera.h"
 
-typedef struct {
-    Object2639 *objList;
-
-    Vector camStartPos;
-    Vector camStartLook;
-    CameraModes cameraMode;
-
-} Level;
-
-
+typedef struct _Level2639 {
+    u32 objCount;
+    Object2639 **objList;
+    u32 camMode;
+    Vector camSpot;
+    Vector camLook;
+} Level2639;

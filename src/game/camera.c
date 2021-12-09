@@ -9,7 +9,7 @@
 #define clampAN(x) if ((x) < -ANG_CLMP) {(x) = -ANG_CLMP;}
 #define clampZ(x) if ((x) < 0) {(x) = 0;}
 
-Vector sCameraLook = {160, 120, 400};
+Vector sCameraLook = {0, 0, 0};
 Vector sCameraLook_Target = {0, 0, 0};
 Vector sCameraSpot = {0, 0, 0};
 Vector sCameraSpot_Target = {0, 0, 0};
@@ -23,6 +23,16 @@ void VectorSubtract (Vector *dest, Vector *v1, Vector *v2) {
     dest->x = v1->x - v2->x;
     dest->y = v1->y - v2->y;
     dest->z = v1->z - v2->z;
+}
+
+void FloatApproach(f32 *dest, f32 *src, f32 multiplier) {
+    *dest = *dest + (*src - *dest) * multiplier;
+}
+
+void VectorFullApproach(Vector *dest, f32 *src, f32 multiplier) {
+    dest->x = dest->x + (*src - dest->x) * multiplier;
+    dest->y = dest->y + (*src - dest->y) * multiplier;
+    dest->z = dest->z + (*src - dest->z) * multiplier;
 }
 
 void VectorNormalize (Vector *dest, Vector *src) {
@@ -133,12 +143,10 @@ static void CameraUpdate_Free(void) {
     CameraApply_RPY();
 }
 
-
-
 void CameraUpdate(Mtx *lookat, f32 mf[4][4]) {
 
     switch (gCameraMode) {
-        case CAMERA_STATIC: break;
+        case CAMERA_STATIC: CameraApply_RPY(); break;
         case CAMERA_FREEMOVE: CameraUpdate_Free(); break;
         case CAMERA_CUTSCENE: break;
 

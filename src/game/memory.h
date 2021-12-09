@@ -5,5 +5,6 @@
 #define SEG_BUFFERS  0x80000400
 #define SEG_LEVEL    0x80100000
 #define SEG_FRAMEBUF 0x80200000
-#define 
+#define SEG_TEXTURES 0x80300000
+// #define 
 
