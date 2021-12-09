@@ -43,6 +43,9 @@ void InGame_LeverLoop(Object2639 *o) {
     FloatApproach(&o->rotate.roll, &B2AngleTarget, 0.2f);
 }
 
+#define LEFT_SIGN   200
+#define DELTA       225
+#define RIGHT_SIGN -200
 
 enum Turn {
     TURN_P1 = 0,
@@ -62,7 +65,7 @@ enum InGameStates {
 static u32 sGameState = IG_STATE_RESET;
 static u32 sGameNextState = IG_STATE_RESET;
 static u32 sStateTimer = 0;
-#define SAMPLES_PER_SEX 4
+#define SAMPLES_PER_SEX 8
 
 s16 DN_BufferX[2][SECOND_COUNT * SAMPLES_PER_SEX];
 s16 DN_BufferY[2][SECOND_COUNT * SAMPLES_PER_SEX];
@@ -71,6 +74,18 @@ u32 ReloadTitle = 0;
 u32 elapsedSamples = 0;
 u32 EXPOSED_State = 0;
 u32 EXPOSED_Timer = 0;
+u32 maxSamples = 0;
+
+#include <PR/gt.h>
+
+gtState PaintStateArray[2][SECOND_COUNT * SAMPLES_PER_SEX * 2];
+Object2639 PaintObjectArray[2][SECOND_COUNT * SAMPLES_PER_SEX * 2];
+gtGfx PaintGFXArray[2][SECOND_COUNT * SAMPLES_PER_SEX * 2];
+extern Object2639 Paint_Obj;
+
+extern gtState Paint_State;
+extern gtGfx Paint_GfxList;
+
 static void NextStateProc(void) {
     EXPOSED_State = sGameState;
     EXPOSED_Timer = sStateTimer;
@@ -84,6 +99,9 @@ static void NextStateProc(void) {
             // *(vs8*)0=0;
             if (sStateTimer >= (60 * SECOND_COUNT) - 50) {
                 sGameNextState = IG_STATE_P1_P2_TRANSITION;
+                for (int i = 0; i < elapsedSamples; i++) {
+                    PaintObjectArray[TURN_P1][i].move.x -= DELTA;
+                }
             }
             break;
         case IG_STATE_P1_P2_TRANSITION:
@@ -91,6 +109,8 @@ static void NextStateProc(void) {
             // bzero(DN_BufferY, sizeof DN_BufferY);
             gTurn = TURN_P2;
             elapsedSamples = 0;
+
+
             if (sStateTimer > 300) {
                 sGameNextState = IG_STATE_P2_DRAW;
             }
@@ -125,9 +145,7 @@ void InGame_Loop(Object2639 *o) {
     sStateTimer++;
 }
 
-#define LEFT_SIGN   200
-#define DELTA       225
-#define RIGHT_SIGN -200
+
 
 
 f32 P1PosT = RIGHT_SIGN;
@@ -163,8 +181,15 @@ void InGame_SignP2_2Loop(Object2639 *o) {
     FloatApproach(&o->move.x, &P2PosT2, 0.2f);
 }
 
+
+extern u32 sMenuChoice ;
+
 f32 PassPosT = LEFT_SIGN;
 void InGame_SignPassLoop(Object2639 *o) {
+    if (sMenuChoice == 2) {
+        o->move.x = -1000;
+        return;
+    }
     if (gTurn==0) {
         PassPosT = LEFT_SIGN + DELTA;
     } else {
@@ -188,18 +213,14 @@ void InGame_CanvasLoop(Object2639 *o) {
 
 
 
-#include <PR/gt.h>
 
-gtState PaintStateArray[SECOND_COUNT * SAMPLES_PER_SEX * 2];
-Object2639 PaintObjectArray[SECOND_COUNT * SAMPLES_PER_SEX * 2];
-gtGfx PaintGFXArray[SECOND_COUNT * SAMPLES_PER_SEX * 2];
-extern Object2639 Paint_Obj;
-
-extern gtState Paint_State;
-extern gtGfx Paint_GfxList;
 
 void SetElapsed(void) {
     elapsedSamples = sStateTimer / (60 / SAMPLES_PER_SEX);
+
+    if (gTurn == TURN_P1) {
+        maxSamples = elapsedSamples;
+    }
 }
 
 u32 gScore = 0;
@@ -228,25 +249,35 @@ void SamplePaintSplotch(Object2639 *o) {
         gScore = 0;
     }
 
-    PaintStateArray[elapsedSamples] = Paint_State;
+    PaintStateArray[gTurn][elapsedSamples] = Paint_State;
 
-    bzero(&PaintGFXArray[elapsedSamples], sizeof(Object2639));
-    PaintGFXArray[elapsedSamples] = Paint_GfxList;
-    PaintGFXArray[elapsedSamples].obj.statep = &PaintStateArray[elapsedSamples];
+    bzero(&PaintGFXArray[gTurn][elapsedSamples], sizeof(Object2639));
+    PaintGFXArray[gTurn][elapsedSamples] = Paint_GfxList;
+    PaintGFXArray[gTurn][elapsedSamples].obj.statep = &PaintStateArray[gTurn][elapsedSamples];
 
-    bzero(&PaintObjectArray[elapsedSamples], sizeof(Object2639));
-    PaintObjectArray[elapsedSamples] = Paint_Obj;
-    PaintObjectArray[elapsedSamples].move.x = o->move.x;
-    PaintObjectArray[elapsedSamples].move.y = o->move.y;
-    PaintObjectArray[elapsedSamples].modelList = &PaintGFXArray[elapsedSamples];
+    bzero(&PaintObjectArray[gTurn][elapsedSamples], sizeof(Object2639));
+    PaintObjectArray[gTurn][elapsedSamples] = Paint_Obj;
+    PaintObjectArray[gTurn][elapsedSamples].move.x = o->move.x;
+    PaintObjectArray[gTurn][elapsedSamples].move.y = o->move.y;
+    if (gTurn == TURN_P2) {
+        PaintObjectArray[gTurn][elapsedSamples].matType = MATERIAL_RED;
+        PaintObjectArray[gTurn][elapsedSamples].move.z = 890;
+    }
+    PaintObjectArray[gTurn][elapsedSamples].modelList = &PaintGFXArray[gTurn][elapsedSamples];
 }
 
 void Draw_PaintSplotch(void) {
     u32 *drawptr = 0;
+    if (sGameState == IG_STATE_P2_DRAW) {
+        for (int i = 0; i < maxSamples; i++) {
+
+            Object_Draw(&PaintObjectArray[TURN_P1][i]);
+        }
+    }
     for (int i = 0; i < elapsedSamples; i++) {
         // PaintObjectArray[i].move.x = DN_BufferX[elapsedSamples];
         // PaintObjectArray[i].move.y = DN_BufferY[elapsedSamples];
-        Object_Draw(&PaintObjectArray[i]);
+        Object_Draw(&PaintObjectArray[gTurn][i]);
     }
 }
 
@@ -300,8 +331,15 @@ void InGame_CursorLoop(Object2639 *o) {
     SetElapsed();
     if (sGameState != IG_STATE_P1_P2_TRANSITION) {
         SamplePaintSplotch(o);
-        Draw_PaintSplotch();
         prevS = elapsedSamples;
+        Draw_PaintSplotch();
+    }
+    else 
+    {
+        for (int i = 0; i < maxSamples; i++) {
+
+            Object_Draw(&PaintObjectArray[TURN_P1][i]);
+        }
     }
 
     if (gTurn == TURN_P1) {

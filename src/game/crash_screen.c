@@ -335,7 +335,10 @@ void draw_stacktrace(OSThread *thread, s32 cause) {
 
 extern char *insn_disasm(u32 insn, u32 isPC);
 static u32 sProgramPosition = 0;
-void draw_disasm(OSThread *thread) {
+
+
+
+static void draw_disasm(OSThread *thread) {
     __OSThreadContext *tc = &thread->context;
     // u32 insn = *(u32*)tc->pc;
 
@@ -397,8 +400,8 @@ void draw_crash_screen(OSThread *thread) {
             case PAGE_CONTEXT:
                 draw_crash_context(thread, cause);
                 break;
-                // case PAGE_STACKTRACE: draw_stacktrace(thread, cause); break;
-                // case PAGE_DISASM:     draw_disasm(thread); break;
+            case PAGE_STACKTRACE: draw_stacktrace(thread, cause); break;
+            case PAGE_DISASM:     draw_disasm(thread); break;
         }
 
         osWritebackDCacheAll();

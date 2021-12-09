@@ -96,7 +96,7 @@ gtGfx Paint_GfxList[] = {
 Object2639 Paint_Obj = {
     {0, 0, 1000},
     {0, 0, 0},
-    {0.2, 0.2, 0.2},
+    {0.1, 0.1, 0.1},
 
     1, // gfxlist count
     &Paint_GfxList, // gfxlist name
