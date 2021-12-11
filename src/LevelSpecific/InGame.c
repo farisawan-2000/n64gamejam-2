@@ -229,25 +229,6 @@ void SamplePaintSplotch(Object2639 *o) {
         DN_BufferX[gTurn][elapsedSamples] = o->move.x;
         DN_BufferY[gTurn][elapsedSamples] = o->move.y;
     // }
-    if (gTurn == TURN_P2) {
-        // u32 r = 0;
-        // for (int i = 0; i < elapsedSamples; i++) {
-        //     if ((abs(DN_BufferX[0][i] - DN_BufferX[1][i]) < 50)
-        //         && (abs(DN_BufferY[0][i] - DN_BufferY[1][i]) < 50)
-        //         ) {
-        //             r += 5;
-        //         }
-        // }
-        // gScore = r;
-
-        if (abs(DN_BufferX[gTurn][elapsedSamples] - DN_BufferX[gTurn^1][elapsedSamples]) < (50 + (DELTA/2))) {
-            if (abs(DN_BufferY[gTurn][elapsedSamples] - DN_BufferY[gTurn^1][elapsedSamples]) < (50 + (DELTA/2))) {
-                gScore += 5;
-            }
-        }
-    } else {
-        gScore = 0;
-    }
 
     PaintStateArray[gTurn][elapsedSamples] = Paint_State;
 
@@ -281,10 +262,34 @@ void SamplePaintSplotch(Object2639 *o) {
             }
     }
     PaintObjectArray[gTurn][elapsedSamples].modelList = &PaintGFXArray[gTurn][elapsedSamples];
+
+    if (gTurn == TURN_P2) {
+        // u32 r = 0;
+        // skip this splotch if uncounted
+        if (PaintObjectArray[TURN_P2][elapsedSamples].move.z < 3000) {
+            for (int i = 0; i < elapsedSamples; i++) {
+                // skip uncounted splotches
+                if (PaintObjectArray[0][i].move.z < 3000) continue;
+
+                // check if current sample ever hits something from P1
+                if ((abs((DN_BufferX[TURN_P1][i] - 0xC8) - DN_BufferX[TURN_P2][elapsedSamples]) < 100)
+                    && (abs((DN_BufferY[TURN_P1][i]) - DN_BufferY[TURN_P2][elapsedSamples]) < 100)
+                ) {
+                    gScore += 5;
+                }
+            }
+        }
+        // gScore = r;
+    } else {
+        gScore = 0;
+    }
 }
 
 void Draw_PaintSplotch(void) {
     u32 *drawptr = 0;
+
+    // u32 score = 0;
+
     if (sGameState == IG_STATE_P2_DRAW) {
         for (int i = 0; i < maxSamples; i++) {
             if (PaintObjectArray[TURN_P1][i].move.z < 3000) {
@@ -299,6 +304,8 @@ void Draw_PaintSplotch(void) {
             Object_Draw(&PaintObjectArray[gTurn][i]);
         }
     }
+
+    // gScore = score;
 }
 
 #define CURSPD 2

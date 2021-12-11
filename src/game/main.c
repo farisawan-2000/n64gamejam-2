@@ -272,13 +272,13 @@ void gameloop(void *arg) {
         switch (EXPOSED_State) {
             case 1:
                 crash_screen_draw_rect(35, 5, 150, 15);
-                crash_screen_print(40,10, "Player1 Turn TIME:%d", 10 - (EXPOSED_Timer/60)); break;
+                crash_screen_print(40,10, "Player1 Turn TIME:%d", 9 - (EXPOSED_Timer/60)); break;
             case 2:
                 crash_screen_draw_rect(35, 5, 150, 15);
                 crash_screen_print(40,10, "Pass in %d", 5 - (EXPOSED_Timer/60)); break;
             case 3:
                 crash_screen_draw_rect(35, 5, 150, 15);
-                crash_screen_print(40,10, "Player2 Turn TIME:%d Score: %d",10 - (EXPOSED_Timer/60), gScore); break;
+                crash_screen_print(40,10, "Player2 Turn TIME:%d Score: %d",9 - (EXPOSED_Timer/60), gScore); break;
 
             case 4:
                 crash_screen_draw_rect(35, 5, 150, 55);            

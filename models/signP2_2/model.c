@@ -687,7 +687,7 @@ gtGfx SignP2_2_GfxList[] = {
 };
 OFUN(InGame_SignP2_2Loop);
 Object2639 SignP2_2_Obj = {
-    {200, 280, 1000},
+    {200, 220, 1000},
     {0, 180, 0},
     {1.0, 1.0, 1.0},
 

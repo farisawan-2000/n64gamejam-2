@@ -687,7 +687,7 @@ gtGfx SignPass_GfxList[] = {
 };
 OFUN(InGame_SignPassLoop)
 Object2639 SignPass_Obj = {
-    {200, 470, 1000},
+    {200, 440, 1000},
     {0, 180, 0},
     {1.0, 1.0, 1.0},
 
