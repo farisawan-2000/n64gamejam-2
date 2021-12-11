@@ -10,6 +10,16 @@
 static Gfx sT3DMatBuffer[8192] ALIGNED16;
 static Gfx *sT3DMatGfxPtr = &sT3DMatBuffer[0];
 
+static u32 getMaskFromDim(u32 dim) {
+    u32 ret = 0;
+    while (dim != 1) {
+        dim /= 2;
+        ret ++;
+    }
+
+    return ret;
+}
+
 void MatAlloc_Init(gtGlobState *g) {
     g->sp.segBases[T3D_SEG_MATERIAL] = (u32)&sT3DMatBuffer[0];
     g->sp.segBases[T3D_SEG_TEXTURE] = SEG_TEXTURES;
@@ -42,13 +52,13 @@ u32 MatAlloc_AllocNoDL(u32 *texture, u32 params) {
     return ret;
 }
 
-u32 MatAlloc_AllocRedDL(u32 *texture, u32 params) {
+u32 MatAlloc_AllocEnvDL(u32 *texture, u32 params) {
     u32 ret = (T3D_SEG_MATERIAL << 24) + ((u32)sT3DMatGfxPtr - (u32)sT3DMatBuffer);
 
-    u8 fmt =    (params >> 24) & 0xFF;
-    u8 size =   (params >> 16) & 0xFF;
-    u8 width =  (params >>  8) & 0xFF;
-    u8 height = (params      ) & 0xFF;
+    u8 r =    (params >> 24) & 0xFF;
+    u8 g =   (params >> 16) & 0xFF;
+    u8 b =  (params >>  8) & 0xFF;
+    u8 a = (params      ) & 0xFF;
 
     gDPPipeSync(sT3DMatGfxPtr++);
     gDPSetCombineLERP(sT3DMatGfxPtr++,
@@ -56,7 +66,7 @@ u32 MatAlloc_AllocRedDL(u32 *texture, u32 params) {
         0, 0, 0, ENVIRONMENT, 0, 0, 0, 1
     );
     gDPSetEnvColor(sT3DMatGfxPtr++,
-        255, 0,0,255
+        r, g,b,a
     );
 
     gDPEndDisplayList(sT3DMatGfxPtr++);
@@ -89,7 +99,7 @@ u32 MatAlloc_AllocTextureDL(u32 *texture, u32 params) {
                 texture,
                 fmt, G_IM_SIZ_8b, width, height, 0,
                 G_TX_WRAP | G_TX_NOMIRROR, G_TX_WRAP | G_TX_NOMIRROR,
-                G_TX_NOMASK, G_TX_NOMASK, G_TX_NOLOD, G_TX_NOLOD
+                getMaskFromDim(width), getMaskFromDim(height), G_TX_NOLOD, G_TX_NOLOD
             );
             break;
         case G_IM_SIZ_16b:

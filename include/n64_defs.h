@@ -33,7 +33,7 @@ extern  OSContStatus contStatus[MAXCONTROLLERS];
 extern  OSContPad _controllers_internal[MAXCONTROLLERS];
 extern  u8 contExist;
 
-extern  u16 system_cfb[2][SCREEN_WD*SCREEN_HT];
+extern  u16 system_cfb[3][SCREEN_WD*SCREEN_HT];
 extern  u16 zbuffer[SCREEN_WD*SCREEN_HT];
 extern  u64 system_rdpfifo[];
 extern  u64 system_rspyield[];

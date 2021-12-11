@@ -7,7 +7,7 @@ enum Material {
     MATERIAL_8B_TEXTURE,
     MATERIAL_8B_TEXTURE_REPEAT,
     MATERIAL_NONE,
-    MATERIAL_RED,
+    MATERIAL_COLOR,
 };
 
 #endif

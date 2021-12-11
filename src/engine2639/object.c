@@ -21,8 +21,8 @@ void Object_MaterialApply(volatile Object2639 *o) {
         case MATERIAL_TEXTURE:
             o->modelList[0].obj.statep->sp.rdpCmds = MatAlloc_AllocTextureDL(o->matPtr, o->matParamWord);
             break;
-        case MATERIAL_RED:
-            o->modelList[0].obj.statep->sp.rdpCmds = MatAlloc_AllocRedDL(o->matPtr, o->matParamWord);
+        case MATERIAL_COLOR:
+            o->modelList[0].obj.statep->sp.rdpCmds = MatAlloc_AllocEnvDL(o->matPtr, o->matParamWord);
             break;
         default:
             *(vs8*)0=0;

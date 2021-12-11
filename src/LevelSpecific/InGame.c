@@ -259,9 +259,26 @@ void SamplePaintSplotch(Object2639 *o) {
     PaintObjectArray[gTurn][elapsedSamples] = Paint_Obj;
     PaintObjectArray[gTurn][elapsedSamples].move.x = o->move.x;
     PaintObjectArray[gTurn][elapsedSamples].move.y = o->move.y;
-    if (gTurn == TURN_P2) {
-        PaintObjectArray[gTurn][elapsedSamples].matType = MATERIAL_RED;
-        PaintObjectArray[gTurn][elapsedSamples].move.z = 890;
+    switch (sGameState) {
+        case IG_STATE_P1_DRAW:
+            if (GameControllers[0].held & A_BUTTON) {
+                PaintObjectArray[gTurn][elapsedSamples].matType = MATERIAL_NONE;
+            } else {
+                PaintObjectArray[gTurn][elapsedSamples].matType = MATERIAL_COLOR;
+                PaintObjectArray[gTurn][elapsedSamples].matParamWord = 0xFFFFFFFF;
+                PaintObjectArray[gTurn][elapsedSamples].move.z = 4000;
+            }
+            break;
+        case IG_STATE_P2_DRAW:
+            if (GameControllers[0].held & R_TRIG) {
+                PaintObjectArray[gTurn][elapsedSamples].matType = MATERIAL_COLOR;
+                PaintObjectArray[gTurn][elapsedSamples].matParamWord = 0xFF0000FF;
+                PaintObjectArray[gTurn][elapsedSamples].move.z = 890;
+            } else {
+                PaintObjectArray[gTurn][elapsedSamples].matType = MATERIAL_COLOR;
+                PaintObjectArray[gTurn][elapsedSamples].matParamWord = 0xFFFFFFFF;
+                PaintObjectArray[gTurn][elapsedSamples].move.z = 4000;
+            }
     }
     PaintObjectArray[gTurn][elapsedSamples].modelList = &PaintGFXArray[gTurn][elapsedSamples];
 }
@@ -270,14 +287,17 @@ void Draw_PaintSplotch(void) {
     u32 *drawptr = 0;
     if (sGameState == IG_STATE_P2_DRAW) {
         for (int i = 0; i < maxSamples; i++) {
-
-            Object_Draw(&PaintObjectArray[TURN_P1][i]);
+            if (PaintObjectArray[TURN_P1][i].move.z < 3000) {
+                Object_Draw(&PaintObjectArray[TURN_P1][i]);
+            }
         }
     }
     for (int i = 0; i < elapsedSamples; i++) {
         // PaintObjectArray[i].move.x = DN_BufferX[elapsedSamples];
         // PaintObjectArray[i].move.y = DN_BufferY[elapsedSamples];
-        Object_Draw(&PaintObjectArray[gTurn][i]);
+        if (PaintObjectArray[TURN_P1][i].move.z < 3000) {
+            Object_Draw(&PaintObjectArray[gTurn][i]);
+        }
     }
 }
 
@@ -295,6 +315,8 @@ f32 YD = 225;
 
 static u32 prevS = 0;
 f32 gYaw = 0;
+
+// extern u8 
 void InGame_CursorLoop(Object2639 *o) {
 
     if (sGameState == IG_STATE_RESULTS) {

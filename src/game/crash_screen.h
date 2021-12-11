@@ -8,6 +8,7 @@ typedef struct {
     OSMesg mesg;
     u16 *framebuffer;
     u16 *framebuffer2;
+    u16 *framebuffer3;
     u16 width;
     u16 height;
 } CrashScreen;
