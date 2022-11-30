@@ -234,6 +234,7 @@ void gameloop(void *arg) {
 
         InitRsp(1);
         MatAlloc_Init(ggsp);
+        gfxAlloc_Init();
 
         gTurboGfxPtr = &(dynamic.turboGfxBuffer[0]);
 

@@ -58,7 +58,7 @@ AR        := mips-n64-ar
 OBJDUMP   := mips-n64-objdump
 OBJCOPY   := mips-n64-objcopy
 
-INCLUDE_DIRS += /usr/include/n64 include $(BUILD_DIR) $(BUILD_DIR)/include src .
+INCLUDE_DIRS += /usr/include/n64 /usr/PSX/include include $(BUILD_DIR) $(BUILD_DIR)/include src .
 
 C_DEFINES := $(foreach d,$(DEFINES),-D$(d))
 DEF_INC_CFLAGS := $(foreach i,$(INCLUDE_DIRS),-I$(i)) $(C_DEFINES)
@@ -95,11 +95,11 @@ turbo3d/build/t3d.bin turbo3d/build/t3d.data.bin:
 
 
 $(BUILD_DIR)/turbo3d_data.o: turbo3d/build/t3d.data.bin
-	mips-linux-gnu-ld -r -b binary $< -o $@
+	mips-n64-ld -r -b binary $< -o $@
 
 $(BUILD_DIR)/turbo3d_text.o: turbo3d/build/t3d.bin
 	make -C turbo3d NON_MATCHING=0 COMPARE=0
-	mips-linux-gnu-ld -r -b binary $< -o $@
+	mips-n64-ld -r -b binary $< -o $@
 
 # Default target
 all: $(ROM)
@@ -112,7 +112,9 @@ test: $(ROM)
 	~/Downloads/mupen64plus/mupen64plus-gui $<
 
 test-pj64: $(ROM)
-	wine ~/Desktop/new64/Project64.exe $<
+	wine ~/Desktop/pj64/Project64.exe $<
+test-ares: $(ROM)
+	ares $<
 
 load: $(ROM)
 	cp $< /media/faris/CF62-9261/

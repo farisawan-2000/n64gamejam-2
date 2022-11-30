@@ -35,6 +35,8 @@ extern  u8 contExist;
 
 extern  u16 system_cfb[3][SCREEN_WD*SCREEN_HT];
 extern  u16 zbuffer[SCREEN_WD*SCREEN_HT];
+#define GFX_SIZE 65536
+extern  u16 gfxAlloc[3][GFX_SIZE];
 extern  u64 system_rdpfifo[];
 extern  u64 system_rspyield[];
 
@@ -50,7 +52,7 @@ typedef struct {
     float viewingF[4][4];
     float identityF[4][4];
 
-    gtGfx turboGfxBuffer[512];
+    gtGfx turboGfxBuffer[2048];
 } GameGFXState;
 extern GameGFXState dynamic;
 
@@ -111,6 +113,7 @@ enum T3DSegments {
     T3D_SEG_MATERIAL = 1,
     T3D_SEG_LEVEL,
     T3D_SEG_TEXTURE,
+    T3D_SEG_GFX,
 };
 
 #define ALIGNED16 __attribute__((aligned(16)))
@@ -134,5 +137,7 @@ extern gtGfx *gTurboGfxPtr;
 
 #define OFUN(x) extern void (x)(Object2639 *);
 
+#include <ps1.h>
+void TMESH_Draw(TMESH *mesh, int index[], u64 *texture);
 
 #endif  /* _LANGUAGE_C */

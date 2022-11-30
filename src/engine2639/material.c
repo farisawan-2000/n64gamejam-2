@@ -7,7 +7,7 @@
 
 #define static
 // 64kb buffer so that we can segment
-static Gfx sT3DMatBuffer[8192] ALIGNED16;
+static Gfx sT3DMatBuffer[32768] ALIGNED16;
 static Gfx *sT3DMatGfxPtr = &sT3DMatBuffer[0];
 
 static u32 getMaskFromDim(u32 dim) {
@@ -67,6 +67,84 @@ u32 MatAlloc_AllocEnvDL(u32 *texture, u32 params) {
     );
     gDPSetEnvColor(sT3DMatGfxPtr++,
         r, g,b,a
+    );
+
+    gDPEndDisplayList(sT3DMatGfxPtr++);
+    gDPEndDisplayList(sT3DMatGfxPtr++);
+    gDPEndDisplayList(sT3DMatGfxPtr++);
+    gDPEndDisplayList(sT3DMatGfxPtr++);
+
+    sT3DMatGfxPtr = (Gfx*)ALIGN64((u32)sT3DMatGfxPtr);
+
+    return ret;
+}
+
+u32 MatAlloc_AllocShadedDL(u32 *texture, u32 params) {
+    u32 ret = (T3D_SEG_MATERIAL << 24) + ((u32)sT3DMatGfxPtr - (u32)sT3DMatBuffer);
+
+    u8 r =    (params >> 24) & 0xFF;
+    u8 g =   (params >> 16) & 0xFF;
+    u8 b =  (params >>  8) & 0xFF;
+    u8 a = (params      ) & 0xFF;
+
+    gDPPipeSync(sT3DMatGfxPtr++);
+    gDPSetCombineLERP(sT3DMatGfxPtr++,
+        SHADE, 0, ENVIRONMENT, 0, 0, 0, 0, ENVIRONMENT,
+        SHADE, 0, ENVIRONMENT, 0, 0, 0, 0, ENVIRONMENT
+    );
+    gDPSetEnvColor(sT3DMatGfxPtr++,
+        r, g,b,a
+    );
+
+    gDPEndDisplayList(sT3DMatGfxPtr++);
+    gDPEndDisplayList(sT3DMatGfxPtr++);
+    gDPEndDisplayList(sT3DMatGfxPtr++);
+    gDPEndDisplayList(sT3DMatGfxPtr++);
+
+    sT3DMatGfxPtr = (Gfx*)ALIGN64((u32)sT3DMatGfxPtr);
+
+    return ret;
+}
+
+u32 MatAlloc_AllocTextureTileDL(u32 *texture, u32 params, u32 ul, u32 lr) {
+    u32 ret = (T3D_SEG_MATERIAL << 24) + ((u32)sT3DMatGfxPtr - (u32)sT3DMatBuffer);
+
+    u8 fmt =    (params >> 24) & 0xFF;
+    u8 siz =   (params >> 16) & 0xFF;
+    u8 wd =  (params >>  8) & 0xFF;
+    u8 ht = (params      ) & 0xFF;
+
+    u16 uls =    (ul >> 16) & 0xFFFF;
+    u16 ult =   (ul) & 0xFFFF;
+    u16 lrs =    (lr >> 16) & 0xFFFF;
+    u16 lrt =   (lr) & 0xFFFF;
+
+    gDPPipeSync(sT3DMatGfxPtr++);
+    // gDPSetCombineLERP(sT3DMatGfxPtr++,
+    //     TEXEL0, 0, SHADE, 0, 0, 0, 0, TEXEL0,
+    //     TEXEL0, 0, SHADE, 0, 0, 0, 0, TEXEL0
+    // );
+    gDPSetCombineLERP(sT3DMatGfxPtr++,
+        0, 0, 0, TEXEL0, 0, 0, 0, 1,
+        0, 0, 0, TEXEL0, 0, 0, 0, 1
+    );
+    gDPLoadTextureTile(
+        sT3DMatGfxPtr++,
+        texture,
+        G_IM_FMT_RGBA,
+        G_IM_SIZ_16b,
+        wd,
+        ht,
+        uls << 2,
+        ult << 2,
+        lrs << 2,
+        lrt << 2,
+        0,
+        (G_TX_NOMIRROR | G_TX_WRAP),
+        (G_TX_NOMIRROR | G_TX_WRAP),
+        getMaskFromDim(wd), getMaskFromDim(ht),
+        (G_TX_NOLOD),
+        (G_TX_NOLOD)
     );
 
     gDPEndDisplayList(sT3DMatGfxPtr++);

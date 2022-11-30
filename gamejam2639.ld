@@ -106,6 +106,7 @@ draw_disasm = 0x80345678;
    BEGIN_SEG(Title, 0x80100000) {
       MODEL(BUILD_DIR/levels/title/level.o);
 
+      MODEL(BUILD_DIR/models/cubetex/model.o);
       MODEL(BUILD_DIR/models/JamTitle/model.o);
       MODEL(BUILD_DIR/models/button1/model.o);
       MODEL(BUILD_DIR/models/button2/model.o);
@@ -140,6 +141,12 @@ draw_disasm = 0x80345678;
       . = ALIGN(16);
    }
    END_SEG(TEXTURE)
+
+   . = 0x80500000;
+   BEGIN_NOLOAD(gfx) {
+      BUILD_DIR/src/buffers/gfxBuffer.o(.bss*);
+   }
+   END_NOLOAD(gfx)
 
 
 

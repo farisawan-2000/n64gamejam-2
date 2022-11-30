@@ -70,5 +70,3 @@ void Object_Draw(Object2639 *o) {
             gTrisRendered += o->modelList[i].obj.statep->sp.triCount;
     }
 }
-
-

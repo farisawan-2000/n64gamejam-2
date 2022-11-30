@@ -62,42 +62,40 @@ void drawLevel(void) {
     gCameraMode = l->camMode;
 
     if (sGameTimer <= 6) {
-        VectorCopy(&sCameraSpot_Target, &l->camSpot);
-        VectorCopy(&sCameraLook_Target, &l->camLook);
+        // VectorCopy(&sCameraSpot_Target, &l->camSpot);
+        // VectorCopy(&sCameraLook_Target, &l->camLook);
     }
 }
 
 extern u32 ReloadTitle;
 
+#include <ps1.h>
+extern TMESH *modelCube;
+extern int modelCube_index[];
 void GameNextStateProc(void) {
     switch (sGameState) {
         case GAME_LOAD_TITLE:
-            // no tlb lol
-            // osMapTLB(0x02, OS_PM_1M, OS_K0_TO_PHYSICAL(SEG_LEVEL), -1, -1, -1);
-                        // u32 oddpaddr, s32 asid);
             GameLoadLevel(0);
             Mem_DMARead(SEG_TEXTURES, FILEARG(TEXTURE));
             sGameNextState = GAME_TITLE;
             break;
         case GAME_TITLE:
-            if (sMenuChoice != 0) {
-                if (sGameTimer > 60) { // semblance of UX design
-                    sGameNextState = GAME_LOAD_LEVEL;
-                    sGameContext = 1;
-                }
-            } else {
-                sGameTimer = 0;
-            }
+            // if (sMenuChoice != 0) {
+            //     if (sGameTimer > 60) {
+            //         sGameNextState = GAME_LOAD_LEVEL;
+            //         sGameContext = 1;
+            //     }
+            // } else {
+            //     sGameTimer = 0;
+            // }
 
-            drawLevel();
+            // drawLevel();
+            TMESH_Draw(&modelCube, modelCube_index, tim_cube_image);
 
             break;
         case GAME_LOAD_LEVEL:
-            // bzero(SEG_LEVEL, 0x100000);
             GameLoadLevel(sGameContext);
             sGameNextState = GAME_LEVEL_LOOP;
-            // void bcopy(const void *src, void *dest, size_t n);
-            // bcopy(0x80300000, 0x80300000 + 0x800, 0x800);
             break;
         case GAME_LEVEL_LOOP:
             drawLevel();

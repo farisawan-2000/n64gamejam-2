@@ -145,14 +145,16 @@ static void CameraUpdate_Free(void) {
 
 void CameraUpdate(Mtx *lookat, f32 mf[4][4]) {
 
-    switch (gCameraMode) {
-        case CAMERA_STATIC: CameraApply_RPY(); break;
-        case CAMERA_FREEMOVE: CameraUpdate_Free(); break;
-        case CAMERA_CUTSCENE: break;
+    // switch (gCameraMode) {
+    //     case CAMERA_STATIC: CameraApply_RPY(); break;
+    //     case CAMERA_FREEMOVE: CameraUpdate_Free(); break;
+    //     case CAMERA_CUTSCENE: break;
 
-        // something else is setting the lookat matrix so we dont care
-        case CAMERA_OBJECTMOVE: break;
-    }
+    //     // something else is setting the lookat matrix so we dont care
+    //     case CAMERA_OBJECTMOVE: break;
+    // }
+
+    CameraUpdate_Free();
 
     // Scrapped feature: camera rotation/shake
 

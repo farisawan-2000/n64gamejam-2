@@ -13,6 +13,7 @@ extern u64 sign_P1Instructions_rgba16[];
 extern u64 canvas_P2Instructions_rgba16[];
 extern u64 canvas_P2Instructions2_rgba16[];
 extern u64 PASS_rgba16[];
+extern u64 tim_cube_image[];
 
 extern u8 WHT_TEX2[32][32] ALIGNED16;
 
