@@ -22,14 +22,14 @@ int max3(int a, int b, int c) {
 }
 
 int min3(int a, int b, int c) {
-    if (b > a) a = b;
-    if (c > a) a = c;
+    if (b < a) a = b;
+    if (c < a) a = c;
     return a;
 }
 
 void getBoundingBox(SVECTOR *uv0, SVECTOR *uv1, SVECTOR *uv2, u32 *ul, u32 *lr) {
-    *ul = (min3(uv0->vx, uv1->vx, uv2->vx) << 16) | (min3(uv0->vy, uv1->vy, uv2->vy) << 16);
-    *lr = (max3(uv0->vx, uv1->vx, uv2->vx) << 16) | (max3(uv0->vy, uv1->vy, uv2->vy) << 16);
+    *ul = (min3(uv0->vx, uv1->vx, uv2->vx) << 16) | (min3(uv0->vy, uv1->vy, uv2->vy) & 0xFFFF);
+    *lr = (max3(uv0->vx, uv1->vx, uv2->vx) << 16) | (max3(uv0->vy, uv1->vy, uv2->vy) & 0xFFFF);
 }
 
 void gfxAlloc_Init(gtGlobState *g) {
@@ -146,8 +146,8 @@ void MakeVertex(Vtx *v, TMESH *mesh, int index[], int i) {
     v->v.ob[2] = mesh->v[index[i]].vz;
 
     v->v.flag = 0;
-    v->v.tc[0] = mesh->u[i].vx;
-    v->v.tc[1] = mesh->u[i].vy;
+    v->v.tc[0] = mesh->u[i].vx << 5;
+    v->v.tc[1] = mesh->u[i].vy << 5;
 
     v->v.cn[0] = mesh->c[i].r;
     v->v.cn[1] = mesh->c[i].g;
@@ -162,24 +162,40 @@ void MakeTri(gtTriN *t, int v0, int v1, int v2) {
     t->flag = 0;
 }
 
+void CorrectUV(Vtx *v, TMESH *mesh, int i) {
+
+}
+
 void MakeOneTriangleState(TMESH *mesh, int index[], int i, u64 *texture) {
     gtGfx *p = gTurboGfxPtr++;
 
     qd_alloc(sizeof(Vtx)*3, &p->obj.vtxp);
-    qd_alloc(sizeof(gtTriN) * 1, &p->obj.trip);
+    qd_alloc(sizeof(gtTriN) * 2, &p->obj.trip);
 
 
     MakeTri(&p->obj.trip[0], 0, 1, 2);
+    MakeTri(&p->obj.trip[1], 0, 1, 2);
 
     MakeVertex(&p->obj.vtxp[0], mesh, index, i + 0);
     MakeVertex(&p->obj.vtxp[1], mesh, index, i + 1);
     MakeVertex(&p->obj.vtxp[2], mesh, index, i + 2);
 
+    CorrectUV(p->obj.vtxp, mesh, i);
+
+    if ((p->obj.vtxp[0].v.tc[0] == p->obj.vtxp[1].v.tc[0])
+        && (p->obj.vtxp[0].v.tc[1] == p->obj.vtxp[1].v.tc[1])
+    ) {
+        *(vs8*)0=0;
+    }
+
     gtState *s;
-    allocState(&p->obj.statep);
-    s = p->obj.statep;
     if (i != 0) {
+        allocStateL(&p->obj.statep);
+        s = p->obj.statep;
         s->sp.flag |= GT_FLAG_NOMTX;
+    } else {
+        allocState(&p->obj.statep);
+        s = p->obj.statep;
     }
     s->sp.vtxCount = 3;
     s->sp.vtxV0 = 0;
@@ -188,7 +204,7 @@ void MakeOneTriangleState(TMESH *mesh, int index[], int i, u64 *texture) {
     s->sp.renderState = (GT_CULL_BACK | GT_SHADING_SMOOTH | GT_TEXTURE | GT_ZBUFFER);
     gDPSetOtherMode(&s->sp.rdpOthermode,
         G_AD_NOISE | G_CD_MAGICSQ | G_CK_NONE | G_TC_FILT | G_TF_BILERP | G_TL_TILE | G_TD_CLAMP | G_TP_PERSP | G_CYC_1CYCLE | G_PM_1PRIMITIVE,
-        G_AC_NONE | G_ZS_PIXEL
+        G_AC_NONE | G_ZS_PIXEL | G_RM_ZB_OPA_SURF | G_RM_ZB_OPA_SURF2
     );
 
     u32 ul = 0;

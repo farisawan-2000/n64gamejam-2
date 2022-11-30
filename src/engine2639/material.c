@@ -108,15 +108,16 @@ u32 MatAlloc_AllocShadedDL(u32 *texture, u32 params) {
 
 u32 MatAlloc_AllocTextureTileDL(u32 *texture, u32 params, u32 ul, u32 lr) {
     u32 ret = (T3D_SEG_MATERIAL << 24) + ((u32)sT3DMatGfxPtr - (u32)sT3DMatBuffer);
+    // u32 ret = sT3DMatGfxPtr;
 
-    u8 fmt =    (params >> 24) & 0xFF;
-    u8 siz =   (params >> 16) & 0xFF;
-    u8 wd =  (params >>  8) & 0xFF;
-    u8 ht = (params      ) & 0xFF;
+    u8 fmt = (params >> 24) & 0xFF;
+    u8 siz = (params >> 16) & 0xFF;
+    u8 wd  = (params >>  8) & 0xFF;
+    u8 ht  = (params      ) & 0xFF;
 
-    u16 uls =    (ul >> 16) & 0xFFFF;
+    u16 uls =   (ul >> 16) & 0xFFFF;
     u16 ult =   (ul) & 0xFFFF;
-    u16 lrs =    (lr >> 16) & 0xFFFF;
+    u16 lrs =   (lr >> 16) & 0xFFFF;
     u16 lrt =   (lr) & 0xFFFF;
 
     gDPPipeSync(sT3DMatGfxPtr++);
@@ -125,9 +126,14 @@ u32 MatAlloc_AllocTextureTileDL(u32 *texture, u32 params, u32 ul, u32 lr) {
     //     TEXEL0, 0, SHADE, 0, 0, 0, 0, TEXEL0
     // );
     gDPSetCombineLERP(sT3DMatGfxPtr++,
-        0, 0, 0, TEXEL0, 0, 0, 0, 1,
-        0, 0, 0, TEXEL0, 0, 0, 0, 1
+        0, 0, 0, TEXEL0, 0, 0, 0, TEXEL0,
+        0, 0, 0, TEXEL0, 0, 0, 0, TEXEL0
     );
+    // gDPSetCombineLERP(sT3DMatGfxPtr++,
+    //     ENVIRONMENT, 0, SHADE, 0, 0, 0, 0, 1,
+    //     ENVIRONMENT, 0, SHADE, 0, 0, 0, 0, 1
+    // );
+    // gDPSetEnvColor(sT3DMatGfxPtr++, 255, 0, 0, 255);
     gDPLoadTextureTile(
         sT3DMatGfxPtr++,
         texture,
@@ -135,16 +141,15 @@ u32 MatAlloc_AllocTextureTileDL(u32 *texture, u32 params, u32 ul, u32 lr) {
         G_IM_SIZ_16b,
         wd,
         ht,
-        uls << 2,
-        ult << 2,
-        lrs << 2,
-        lrt << 2,
+        uls,
+        ult,
+        lrs,
+        lrt,
         0,
         (G_TX_NOMIRROR | G_TX_WRAP),
         (G_TX_NOMIRROR | G_TX_WRAP),
-        getMaskFromDim(wd), getMaskFromDim(ht),
-        (G_TX_NOLOD),
-        (G_TX_NOLOD)
+        G_TX_NOMASK, G_TX_NOMASK,
+        G_TX_NOLOD, G_TX_NOLOD
     );
 
     gDPEndDisplayList(sT3DMatGfxPtr++);

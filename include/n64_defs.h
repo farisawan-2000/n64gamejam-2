@@ -117,6 +117,7 @@ enum T3DSegments {
 };
 
 #define ALIGNED16 __attribute__((aligned(16)))
+#define ALIGNED(x) __attribute__((aligned((x))))
 #define TEX __attribute__ ((section ("TEXTURE")))
 #include "game/textures.h"
 typedef float Mtx4[4][4];
